@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>歴史ってそういうことか！</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Syne:wght@700;800&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ROOT
+============================================================ */
+:root {
+  --white: #ffffff;
+  --off-white: #f8f8f6;
+  --ink: #1c1c1a;
+  --gray: #6b6b68;
+  --light-gray: #e8e8e4;
+
+  /* Era accent colors */
+  --era-jomon-accent:   #d97706;
+  --era-jomon-bg:       #fef3c7;
+  --era-nara-accent:    #7c3aed;
+  --era-nara-bg:        #ede9fe;
+  --era-kamakura-accent:#0284c7;
+  --era-kamakura-bg:    #e0f2fe;
+  --era-sengoku-accent: #dc2626;
+  --era-sengoku-bg:     #fee2e2;
+  --era-edo-accent:     #ca8a04;
+  --era-edo-bg:         #fef9c3;
+  --era-meiji-accent:   #2563eb;
+  --era-meiji-bg:       #dbeafe;
+  --era-showa-accent:   #65a30d;
+  --era-showa-bg:       #ecfccb;
+
+  /* UI colors */
+  --coral:    #ff5e5b;
+  --mint:     #00c9a7;
+  --yellow:   #ffe135;
+  --sky:      #5bc8f5;
+  --lavender: #a78bfa;
+
+  /* Current era (dynamic) */
+  --cur-accent: var(--era-edo-accent);
+  --cur-bg:     var(--era-edo-bg);
+
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 3px 3px 0 var(--ink);
+  --shadow-sm: 2px 2px 0 var(--ink);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  background: var(--off-white);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   SCREENS
+============================================================ */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ============================================================
+   SHARED NAV HEADER
+============================================================ */
+.app-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: var(--ink);
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 3px solid var(--cur-accent);
+}
+.back-btn {
+  background: none;
+  border: 2px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 5px 12px;
+  cursor: pointer;
+  border-radius: 100px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.back-btn:hover { border-color: white; color: white; }
+.header-title {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 14px; font-weight: 700;
+  color: white; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.header-badge {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: var(--cur-accent);
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   HOME SCREEN
+============================================================ */
+#screen-home {
+  background: var(--ink);
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(255,225,53,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(255,94,91,0.1) 0%, transparent 50%);
+  padding: 28px 16px 40px;
+  align-items: center;
+}
+
+.home-logo {
+  text-align: center;
+  max-width: 520px; width: 100%;
+  margin-bottom: 28px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.home-icon {
+  font-size: 48px; display: block; margin-bottom: 10px;
+  animation: spinIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes spinIn { from{transform:rotate(-180deg) scale(0);opacity:0} to{transform:rotate(0) scale(1);opacity:1} }
+.home-series {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.4em; color: var(--mint);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.home-title {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: clamp(28px,7vw,48px); font-weight: 900;
+  color: white; line-height: 1.2; margin-bottom: 6px;
+}
+.home-title span { color: var(--yellow); }
+.home-sub { font-size: 12px; color: rgba(255,255,255,0.45); }
+
+.era-section-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.3em; color: var(--yellow);
+  text-transform: uppercase;
+  max-width: 520px; width: 100%;
+  margin-bottom: 10px;
+  animation: fadeUp 0.6s 0.3s ease both; opacity: 0;
+}
+
+/* ERA GRID */
+.era-grid {
+  display: grid; grid-template-columns: repeat(2,1fr);
+  gap: 8px; max-width: 520px; width: 100%;
+  animation: fadeUp 0.6s 0.4s ease both; opacity: 0;
+}
+
+.era-card {
+  border: 2.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 16px 14px;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.1s;
+}
+.era-card:hover { border-color: rgba(255,255,255,0.35); transform: translate(-1px,-1px); }
+.era-card.selected { border-color: var(--yellow) !important; box-shadow: 0 0 0 1px var(--yellow); }
+
+/* era-specific bg tints */
+.era-card.jomon { background: linear-gradient(135deg,#3a2a10,#2a1e08); }
+.era-card.nara { background: linear-gradient(135deg,#2e1a4a,#1e1030); }
+.era-card.kamakura { background: linear-gradient(135deg,#0a2030,#061420); }
+.era-card.sengoku { background: linear-gradient(135deg,#2e0e0e,#1e0808); }
+.era-card.edo { background: linear-gradient(135deg,#2e1e08,#1e1206); }
+.era-card.meiji { background: linear-gradient(135deg,#0e1e3a,#080e22); }
+.era-card.showa { background: linear-gradient(135deg,#1a2010,#0e160a); }
+
+.era-badge {
+  position: absolute; top: 10px; right: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 8px; font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 3px 8px; border-radius: 100px;
+  background: var(--cur-accent); color: var(--ink);
+}
+
+/* badge colors per era */
+.era-card.jomon .era-badge { background: var(--era-jomon-accent); color: white; }
+.era-card.nara .era-badge { background: var(--era-nara-accent); color: white; }
+.era-card.kamakura .era-badge { background: var(--era-kamakura-accent); color: white; }
+.era-card.sengoku .era-badge { background: var(--era-sengoku-accent); color: white; }
+.era-card.edo .era-badge { background: var(--era-edo-accent); color: white; }
+.era-card.meiji .era-badge { background: var(--era-meiji-accent); color: white; }
+.era-card.showa .era-badge { background: var(--era-showa-accent); color: white; }
+
+.era-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+.era-period { font-family: 'DM Sans', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.15em; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.era-name { font-size: 16px; font-weight: 900; color: white; line-height: 1.2; margin-bottom: 4px; }
+.era-sub { font-size: 10px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+.era-progress { font-size: 9px; color: rgba(255,255,255,0.35); margin-top: 6px; }
+
+.start-btn-wrap {
+  max-width: 520px; width: 100%; margin-top: 14px;
+  animation: fadeUp 0.6s 0.5s ease both; opacity: 0;
+}
+.start-btn {
+  width: 100%; padding: 16px;
+  background: var(--yellow); border: none; color: var(--ink);
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 15px; font-weight: 900;
+  border-radius: var(--radius);
+  cursor: pointer; box-shadow: 3px 3px 0 rgba(255,225,53,0.4);
+  transition: all 0.15s;
+}
+.start-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 rgba(255,225,53,0.5); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+/* ============================================================
+   HUB SCREEN
+============================================================ */
+#screen-hub { background: var(--off-white); }
+#screen-hub .app-header { background: var(--ink); }
+
+.hub-body {
+  padding: 20px 16px 32px;
+  max-width: 580px; margin: 0 auto; width: 100%;
+  flex: 1; display: flex; flex-direction: column; gap: 14px;
+}
+
+.hub-hero {
+  background: var(--ink);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  position: relative; overflow: hidden;
+}
+.hub-hero::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: var(--cur-accent);
+  border-radius: 50%; opacity: 0.12;
+}
+.hub-era-icon { font-size: 36px; display: block; margin-bottom: 10px; }
+.hub-era-title {
+  font-size: clamp(20px,5vw,30px); font-weight: 900;
+  color: white; line-height: 1.2; margin-bottom: 6px;
+}
+.hub-era-title span { color: var(--yellow); }
+.hub-era-sub { font-size: 12px; color: rgba(255,255,255,0.45); }
+
+.hub-mode-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.hub-mode-btn {
+  background: white; border: 2.5px solid var(--ink);
+  border-radius: var(--radius); padding: 16px 12px;
+  cursor: pointer; text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+}
+.hub-mode-btn:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow); }
+.hub-mode-btn.primary {
+  background: var(--cur-accent); border-color: var(--cur-accent);
+  color: var(--ink);
+}
+.hub-mode-icon { font-size: 24px; display: block; margin-bottom: 6px; }
+.hub-mode-label { font-size: 12px; font-weight: 900; display: block; margin-bottom: 2px; }
+.hub-mode-desc { font-size: 10px; color: var(--gray); line-height: 1.4; }
+.hub-mode-btn.primary .hub-mode-desc { color: rgba(0,0,0,0.5); }
+
+.hub-progress-wrap {
+  background: white; border: 2.5px solid var(--ink);
+  border-radius: var(--radius); padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.hub-progress-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; color: var(--cur-accent);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.hub-dots { display: flex; gap: 6px; flex-wrap: wrap; }
+.hub-dot {
+  width: 28px; height: 28px;
+  border: 2px solid var(--light-gray);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
+  color: var(--gray); cursor: pointer; transition: all 0.2s;
+}
+.hub-dot.read { background: var(--cur-accent); border-color: var(--cur-accent); color: white; }
+.hub-dot.quiz-done { background: var(--coral); border-color: var(--coral); color: white; }
+
+/* ============================================================
+   EPISODE LIST
+============================================================ */
+#screen-list { background: var(--off-white); }
+
+.ep-list-body {
+  padding: 12px 16px;
+  max-width: 580px; margin: 0 auto; width: 100%;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.ep-card {
+  background: white; border: 2.5px solid var(--ink);
+  border-radius: var(--radius); padding: 14px 16px;
+  cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: all 0.1s;
+  display: flex; align-items: center; gap: 12px;
+}
+.ep-card:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow); }
+.ep-card.read { background: var(--off-white); }
+
+.ep-num {
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  color: var(--cur-accent); min-width: 36px; letter-spacing: 0.05em;
+}
+.ep-info { flex: 1; }
+.ep-card-title { font-size: 14px; font-weight: 900; color: var(--ink); margin-bottom: 2px; }
+.ep-card-sub { font-size: 11px; color: var(--gray); }
+.ep-badge { font-size: 16px; }
+
+.ep-card.ai-card {
+  background: var(--ink); border-color: var(--yellow);
+  box-shadow: 2px 2px 0 rgba(255,225,53,0.4);
+}
+.ep-card.ai-card .ep-num { color: var(--yellow); }
+.ep-card.ai-card .ep-card-title { color: white; }
+.ep-card.ai-card .ep-card-sub { color: rgba(255,255,255,0.4); }
+
+/* ============================================================
+   READER SCREEN
+============================================================ */
+#screen-reader { background: var(--off-white); }
+#screen-reader .app-header { background: var(--ink); }
+
+.quiz-trigger-btn {
+  background: var(--coral); border: none; color: white;
+  font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; padding: 6px 14px;
+  border-radius: 100px; cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(255,94,91,0.4);
+  transition: all 0.15s; flex-shrink: 0;
+}
+.quiz-trigger-btn:hover { transform: translate(-1px,-1px); }
+
+.manga-content {
+  max-width: 680px; margin: 0 auto; padding: 16px;
+  width: 100%;
+}
+
+/* ============================================================
+   MANGA PANEL COMPONENTS
+============================================================ */
+.manga-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+.m-cover {
+  background: var(--ink); border-radius: var(--radius);
+  padding: 32px 24px 24px;
+  position: relative; overflow: hidden; margin-bottom: 4px;
+}
+.m-cover::before {
+  content: ''; position: absolute; top:-60px; right:-60px;
+  width:220px; height:220px; background:var(--yellow);
+  border-radius:50%; opacity:0.1;
+}
+.m-cover::after {
+  content: ''; position:absolute; bottom:-40px; left:-40px;
+  width:160px; height:160px; background:var(--coral);
+  border-radius:50%; opacity:0.08;
+}
+.m-cover-series {
+  font-family:'DM Sans',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:0.35em; color:var(--mint); text-transform:uppercase; margin-bottom:10px;
+}
+.m-cover-ep {
+  display:inline-block; background:var(--yellow); color:var(--ink);
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:800;
+  letter-spacing:0.15em; padding:3px 12px; border-radius:100px; margin-bottom:12px;
+}
+.m-cover-title {
+  font-size:clamp(22px,5vw,36px); font-weight:900;
+  color:white; line-height:1.2; margin-bottom:8px; position:relative; z-index:1;
+}
+.m-cover-title .hl { color:var(--yellow); }
+.m-cover-sub {
+  font-size:12px; font-weight:500; color:rgba(255,255,255,0.5);
+  border-left:3px solid var(--coral); padding-left:10px; position:relative; z-index:1;
+}
+
+.m-page { display:flex; flex-direction:column; gap:4px; }
+
+.m-panel {
+  background:white; border-radius:var(--radius);
+  border:2.5px solid var(--ink); box-shadow:var(--shadow-sm);
+  overflow:hidden; position:relative;
+}
+.m-panel-inner { padding:16px; display:flex; flex-direction:column; gap:10px; }
+
+.m-narr {
+  background:var(--ink); color:white;
+  font-size:12px; font-weight:700; line-height:1.7;
+  padding:8px 14px; border-radius:var(--radius-sm);
+  align-self:flex-start;
+}
+.m-narr.accent { background:var(--mint); color:var(--ink); }
+.m-narr.tone { background:var(--cur-accent); color:var(--ink); }
+.m-narr.right { align-self:flex-end; }
+
+.m-scene {
+  position:absolute; top:0; left:0;
+  background:var(--coral); color:white;
+  font-size:9px; font-weight:700; letter-spacing:0.15em;
+  padding:4px 12px; border-radius:0 0 var(--radius-sm) 0;
+}
+
+.m-bubble-wrap { display:flex; align-items:flex-start; gap:8px; }
+.m-bubble-wrap.right { flex-direction:row-reverse; }
+.m-char-col { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+.m-char-icon {
+  width:46px; height:46px; border-radius:50%;
+  border:2.5px solid var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.m-char-icon.a { background:#fde8d8; }
+.m-char-icon.b { background:#dbeafe; }
+.m-char-icon.c { background:#dcfce7; }
+.m-char-icon.d { background:#fef9c3; }
+.m-char-name { font-size:9px; font-weight:700; color:var(--gray); text-align:center; white-space:nowrap; }
+
+.m-bubble {
+  background:white; border:2px solid var(--ink);
+  border-radius:14px; padding:9px 12px;
+  font-size:13px; line-height:1.65; font-weight:700;
+  max-width:calc(100% - 62px);
+  position:relative; box-shadow:var(--shadow-sm);
+}
+.m-bubble::before { content:''; position:absolute; top:13px; left:-8px; border:5px solid transparent; border-right-color:var(--ink); }
+.m-bubble::after { content:''; position:absolute; top:14px; left:-5px; border:4px solid transparent; border-right-color:white; }
+.m-bubble-wrap.right .m-bubble::before { left:auto; right:-8px; border-right-color:transparent; border-left-color:var(--ink); }
+.m-bubble-wrap.right .m-bubble::after { left:auto; right:-5px; border-right-color:transparent; border-left-color:white; }
+.m-bubble .note { font-size:10px; font-weight:500; color:rgba(0,0,0,0.4); display:block; margin-top:3px; }
+
+.m-thought {
+  background:#fef9e7; border:2px dashed var(--ink);
+  border-radius:18px; padding:8px 12px;
+  font-size:12px; font-weight:700;
+  max-width:calc(100% - 62px); line-height:1.6;
+}
+
+.m-sfx-wrap { text-align:center; padding:6px 0; }
+.m-sfx {
+  font-family:'Syne',sans-serif; font-size:30px; font-weight:800;
+  color:var(--coral); text-shadow:3px 3px 0 var(--ink);
+  display:inline-block; transform:rotate(-2deg);
+}
+
+.m-split {
+  display:grid; grid-template-columns:1fr 1fr;
+  border:2.5px solid var(--ink); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.m-split-half { padding:14px; display:flex; flex-direction:column; gap:7px; }
+.m-split-half.edo-side { background:#fff8e7; border-right:2px solid var(--ink); }
+.m-split-half.now-side { background:#e8f8ff; }
+.m-split-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:9px; font-weight:700; letter-spacing:0.1em;
+  padding:3px 9px; border-radius:100px; align-self:flex-start;
+}
+.m-split-badge.edo { background:var(--yellow); color:var(--ink); }
+.m-split-badge.now { background:var(--sky); color:var(--ink); }
+.m-split-emoji { font-size:28px; display:block; text-align:center; margin:3px 0; }
+.m-split-list { display:flex; flex-direction:column; gap:4px; }
+.m-split-item { font-size:11px; font-weight:700; line-height:1.5; color:var(--ink); display:flex; gap:5px; align-items:flex-start; }
+.m-split-item::before { content:'▸'; color:var(--coral); flex-shrink:0; font-size:9px; margin-top:2px; }
+
+.m-insight {
+  background:var(--ink); border-radius:var(--radius);
+  padding:18px 20px; position:relative; overflow:hidden;
+}
+.m-insight::before {
+  content:''; position:absolute; top:-24px; right:-24px;
+  width:100px; height:100px; background:var(--mint);
+  border-radius:50%; opacity:0.15;
+}
+.m-insight-label {
+  font-family:'DM Sans',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:0.3em; color:var(--yellow); text-transform:uppercase;
+  margin-bottom:8px; display:flex; align-items:center; gap:8px;
+}
+.m-insight-label::before { content:''; display:block; width:16px; height:2px; background:var(--yellow); }
+.m-insight-text {
+  font-size:13px; line-height:1.9; color:rgba(255,255,255,0.85);
+  font-weight:500; position:relative; z-index:1;
+}
+.m-insight-text strong { color:var(--yellow); font-weight:700; }
+
+.m-footer {
+  background:var(--ink); border-radius:var(--radius);
+  padding:12px 18px; display:flex;
+  justify-content:space-between; align-items:center; margin-top:4px;
+}
+.m-footer-next { font-size:11px; font-weight:700; color:var(--coral); }
+.m-footer-num { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; color:var(--yellow); }
+
+.m-box { border:2px solid var(--ink); border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; line-height:1.7; font-weight:700; }
+.m-box.yellow { background:#fffde7; }
+.m-box.mint { background:#e8fdf7; }
+.m-badge-row { display:flex; flex-wrap:wrap; gap:5px; }
+.m-badge { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; padding:3px 10px; border-radius:100px; border:2px solid var(--ink); }
+.m-badge.yellow { background:var(--yellow); color:var(--ink); }
+.m-badge.mint { background:var(--mint); color:white; }
+.m-badge.sky { background:var(--sky); color:var(--ink); }
+.m-badge.coral { background:var(--coral); color:white; }
+
+/* AI Loading */
+.ai-loading {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; min-height:55vh; gap:16px; padding:20px;
+}
+.ai-loading-icon { font-size:44px; animation:pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.ai-loading-text { font-size:15px; font-weight:900; color:var(--cur-accent); }
+.ai-loading-sub { font-size:12px; color:var(--gray); text-align:center; }
+.ai-loading-bar { width:160px; height:3px; background:var(--light-gray); border-radius:2px; overflow:hidden; }
+.ai-bar-fill { height:100%; background:var(--cur-accent); animation:loadBar 1.8s ease-in-out infinite; }
+@keyframes loadBar { 0%{width:0} 50%{width:65%} 100%{width:100%} }
+
+/* ============================================================
+   QUIZ SCREEN
+============================================================ */
+#screen-quiz { background: var(--off-white); }
+#screen-quiz .app-header { background: var(--coral); border-bottom-color: #c0392b; }
+#screen-quiz .back-btn { border-color: rgba(255,255,255,0.4); color: white; }
+#screen-quiz .header-title { color: white; }
+
+.quiz-body {
+  padding: 16px; max-width: 580px; margin: 0 auto;
+  width: 100%; flex: 1; display: flex; flex-direction: column;
+}
+.quiz-prog-bar { display:flex; gap:4px; margin-bottom:16px; }
+.quiz-pd { flex:1; height:4px; background:var(--light-gray); border-radius:2px; transition:background 0.3s; }
+.quiz-pd.done { background:var(--coral); }
+.quiz-pd.current { background:var(--cur-accent); }
+.quiz-ep-label {
+  font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:0.15em; color:var(--cur-accent); text-transform:uppercase; margin-bottom:8px;
+}
+.quiz-question {
+  background:white; border:2.5px solid var(--ink);
+  border-radius:var(--radius); padding:16px;
+  box-shadow:var(--shadow-sm);
+  font-size:16px; font-weight:900; color:var(--ink);
+  line-height:1.6; margin-bottom:14px;
+}
+.quiz-options { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.quiz-option {
+  background:white; border:2.5px solid var(--ink);
+  border-radius:var(--radius); padding:12px 14px;
+  font-size:13px; font-weight:700; color:var(--ink);
+  text-align:left; cursor:pointer; box-shadow:var(--shadow-sm);
+  transition:all 0.1s; font-family:'Zen Maru Gothic',sans-serif;
+}
+.quiz-option:hover:not(:disabled) { transform:translate(-1px,-1px); box-shadow:var(--shadow); }
+.quiz-option.correct { background:#dcfce7; border-color:#16a34a; box-shadow:2px 2px 0 #16a34a; }
+.quiz-option.wrong { background:#fee2e2; border-color:var(--coral); box-shadow:2px 2px 0 var(--coral); }
+.quiz-option:disabled { cursor:default; transform:none; }
+
+.quiz-feedback {
+  display:none; padding:12px 14px;
+  border:2.5px solid var(--ink); border-radius:var(--radius);
+  font-size:13px; font-weight:700; line-height:1.7; margin-bottom:12px;
+}
+.quiz-feedback.show { display:block; }
+.quiz-feedback.correct-fb { background:#dcfce7; border-color:#16a34a; }
+.quiz-feedback.wrong-fb { background:#fee2e2; border-color:var(--coral); }
+
+.quiz-next-btn {
+  background:var(--ink); border:none; color:white;
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:0.1em; padding:13px 22px;
+  border-radius:100px; cursor:pointer;
+  box-shadow:2px 2px 0 var(--cur-accent);
+  align-self:flex-end; display:none; transition:all 0.15s;
+}
+.quiz-next-btn.show { display:block; }
+.quiz-next-btn:hover { transform:translate(-1px,-1px); }
+
+.quiz-result { display:none; flex-direction:column; align-items:center; padding:28px 16px; text-align:center; gap:12px; }
+.quiz-result.show { display:flex; }
+.result-stamp { font-size:52px; animation:stampIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes stampIn { from{transform:scale(3);opacity:0} to{transform:scale(1);opacity:1} }
+.result-score { font-family:'Syne',sans-serif; font-size:64px; font-weight:800; color:var(--coral); line-height:1; }
+.result-label { font-size:18px; font-weight:900; color:var(--ink); }
+.result-sub { font-size:12px; color:var(--gray); line-height:1.7; }
+.result-btns { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:4px; }
+.result-btn {
+  border:2.5px solid var(--ink); background:white;
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:0.1em; padding:11px 20px;
+  border-radius:100px; cursor:pointer; box-shadow:var(--shadow-sm);
+  transition:all 0.15s;
+}
+.result-btn:hover { transform:translate(-1px,-1px); box-shadow:var(--shadow); }
+.result-btn.primary { background:var(--ink); color:white; border-color:var(--cur-accent); box-shadow:2px 2px 0 var(--cur-accent); }
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media(max-width:480px) {
+  .m-split { grid-template-columns:1fr; }
+  .m-split-half.edo-side { border-right:none; border-bottom:2px solid var(--ink); }
+  .era-grid { grid-template-columns:1fr 1fr; gap:6px; }
+  .ai-topic-grid { grid-template-columns:repeat(2,1fr); }
+  .hub-mode-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+
+<!-- ===== HOME ===== -->
+<div id="screen-home" class="screen active">
+  <div class="home-logo">
+    <span class="home-icon" id="home-icon">🏯</span>
+    <div class="home-series">Rekishi Manga Series</div>
+    <div class="home-title">歴史って<br><span>そういうことか！</span></div>
+    <div class="home-sub">各時代の出来事を「今の言葉」で読み解く歴史マンガ</div>
+  </div>
+  <div class="era-section-label">時代を選んでください</div>
+  <div class="era-grid" id="era-grid"></div>
+  <div class="start-btn-wrap">
+    <button class="start-btn" id="start-btn" onclick="goToHub()">この時代で学ぶ ▶</button>
+  </div>
+</div>
+
+<!-- ===== HUB ===== -->
+<div id="screen-hub" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showScreen('home')">← 時代選択</button>
+    <div class="header-title" id="hub-header-title"></div>
+    <div class="header-badge" id="hub-badge"></div>
+  </div>
+  <div class="hub-body">
+    <div class="hub-hero">
+      <span class="hub-era-icon" id="hub-icon"></span>
+      <div class="hub-era-title" id="hub-title"></div>
+      <div class="hub-era-sub" id="hub-sub"></div>
+    </div>
+    <div class="hub-mode-grid">
+      <div class="hub-mode-btn primary" onclick="showEpList()">
+        <span class="hub-mode-icon">📚</span>
+        <span class="hub-mode-label">マンガを読む</span>
+        <span class="hub-mode-desc">全話を一覧から選ぶ</span>
+      </div>
+      <div class="hub-mode-btn" onclick="startRandomQuiz()">
+        <span class="hub-mode-icon">🎲</span>
+        <span class="hub-mode-label">ランダムクイズ</span>
+        <span class="hub-mode-desc">全話からランダム出題</span>
+      </div>
+      <div class="hub-mode-btn" onclick="startRandomQuiz()">
+        <span class="hub-mode-icon">❓</span>
+        <span class="hub-mode-label">クイズ</span>
+        <span class="hub-mode-desc">ランダム出題</span>
+      </div>
+      <div class="hub-mode-btn" onclick="showScreen('home')">
+        <span class="hub-mode-icon">🗾</span>
+        <span class="hub-mode-label">時代を変える</span>
+        <span class="hub-mode-desc">他の時代へ</span>
+      </div>
+    </div>
+    <div class="hub-progress-wrap">
+      <div class="hub-progress-label" id="hub-prog-label">読んだ話</div>
+      <div class="hub-dots" id="hub-dots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EPISODE LIST ===== -->
+<div id="screen-list" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showScreen('hub')">← もどる</button>
+    <div class="header-title">📚 話を選ぶ</div>
+    <div class="header-badge" id="list-badge"></div>
+  </div>
+  <div class="ep-list-body" id="ep-list-body"></div>
+</div>
+
+<!-- ===== READER ===== -->
+<div id="screen-reader" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showScreen('list')">← もどる</button>
+    <div class="header-title" id="reader-title">読み込み中...</div>
+    <button class="quiz-trigger-btn" id="quiz-btn" onclick="startQuizForCurrentEp()">クイズ ❓</button>
+  </div>
+  <div class="manga-content" id="manga-content"></div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="screen-quiz" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="showScreen('hub')">← もどる</button>
+    <div class="header-title">❓ クイズ</div>
+  </div>
+  <div class="quiz-body">
+    <div class="quiz-prog-bar" id="quiz-prog-bar"></div>
+    <div class="quiz-ep-label" id="quiz-ep-label"></div>
+    <div class="quiz-question" id="quiz-question"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <button class="quiz-next-btn" id="quiz-next-btn" onclick="nextQuestion()">つぎへ →</button>
+    <div class="quiz-result" id="quiz-result">
+      <div class="result-stamp" id="result-stamp"></div>
+      <div class="result-score" id="result-score"></div>
+      <div class="result-label" id="result-label"></div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-btns">
+        <button class="result-btn" onclick="retryQuiz()">もう一度</button>
+        <button class="result-btn primary" onclick="showScreen('hub')">ホームへ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ERAS = [
+  {
+    id:'jomon',cls:'jomon',icon:'🏺',name:'縄文・弥生・古墳',period:'〜700年ごろ',
+    sub:'稲作・邪馬台国・前方後円墳',
+    bgVar:'--era-jomon-bg',accentVar:'--era-jomon-accent',textVar:'--era-jomon-text',badge:'原始〜古代',
+    aiTopics:['邪馬台国と卑弥呼','稲作の伝来','前方後円墳','縄文土器','弥生時代の戦争','大陸との交流','土偶と祭り','貝塚と食生活','金属器の伝来','古墳の副葬品'],
+    episodes:[
+      {id:1,title:'邪馬台国ってどこにあったの？',subtitle:'——その謎は今も解けていない。',keyword:'邪馬台国',
+       scene:'📍 3世紀・九州または畿内の王都',
+       char1:{icon:'👸',name:'卑弥呼',line:'私は呪術で国をまとめておる。\n魏の皇帝にも使いを送ったぞ。'},
+       char2:{icon:'🧒',name:'現代の子',line:'え、呪術で政治？\nそれって今のカリスマ政治家\nみたいな感じ…？'},
+       eraLabel:'📜 邪馬台国',eraIcon:'📜',
+       eraPoints:['女王・卑弥呼が呪術で統治','30ほどの小国を従えた連合国家','魏（中国）に使者を送り金印をもらう','場所は九州説と畿内説で今も論争中','卑弥呼の死後、男王では国が乱れた'],
+       nowLabel:'🗳️ 現代のカリスマ政治',nowIcon:'🗳️',
+       nowPoints:['強いリーダーが人心を集める','国際社会に承認を求めて国力を示す','「正統性」をどう得るかが権力の鍵','権威の根拠が変わると国が不安定に','女性リーダーへの評価は今も続く課題'],
+       modernReaction:'呪術で政治って変に思えるけど\n「信じさせる力」は今も一緒か！',
+       eraReply:'民が信じてくれれば\nそれが権力じゃ。\n形が違うだけじゃよ。',
+       quiz:[
+         {q:'邪馬台国の女王・卑弥呼が得意としていたとされるものは？',opts:['剣術','占い・呪術','農業','外交'],ans:1,exp:'卑弥呼は鬼道（呪術・占い）で国をまとめたとされています。'},
+         {q:'卑弥呼が使いを送った中国の王朝は？',opts:['漢','魏','唐','隋'],ans:1,exp:'卑弥呼は魏（ぎ）の皇帝に使いを送り、「親魏倭王」の称号と金印をもらいました。'},
+         {q:'邪馬台国の場所については現在どうなっている？',opts:['九州説で確定','畿内説で確定','まだ論争中で確定していない','海外にあった'],ans:2,exp:'邪馬台国がどこにあったかは「九州説」と「畿内説」に分かれ、現在も論争が続いています。'}
+       ]},
+      {id:2,title:'稲作って最強の発明？',subtitle:'——食べ物が変わると、社会が変わる。',keyword:'稲作',
+       scene:'📍 弥生時代・水田が広がる村',
+       char1:{icon:'👨‍🌾',name:'弥生の農民',line:'稲を育てれば\n食いっぱぐれがない！\nでも…貯めた米を\n狙われるようになった。'},
+       char2:{icon:'🧒',name:'現代の子',line:'豊かになったら\n今度は奪い合いが始まったのか。\nそれって今の格差社会と同じだ…'},
+       eraLabel:'🌾 弥生時代の稲作',eraIcon:'🌾',
+       eraPoints:['大陸から米作りが伝わる（約2500年前）','食料が安定し人口が急増した','余った米を蓄えた者が権力を持つように','土地・収穫物を守るため村に堀を作る（環濠集落）','貧富の差と身分制度が生まれ始めた'],
+       nowLabel:'💰 現代の農業・食料問題',nowIcon:'💰',
+       nowPoints:['食料の安定供給が国の安全保障に直結','食料を持つ国と持たない国の格差','農業生産性の向上が経済格差を生む','食料安保のため日本は米の備蓄制度を持つ','「稲作」は今も日本の文化・経済の基盤'],
+       modernReaction:'食料が「力」になるのは\n今も変わらないんだね。\n食料安保って言葉、納得した！',
+       eraReply:'米があれば冬を越せる。\n米がなければ\n命が危ない。\nそれだけのことじゃ。',
+       quiz:[
+         {q:'稲作が日本に伝わったのはいつごろ？',opts:['縄文時代初期','弥生時代ごろ','古墳時代','奈良時代'],ans:1,exp:'稲作は弥生時代（約2500年前ごろ）に大陸から伝わりました。'},
+         {q:'稲作によって生まれた新しい問題は？',opts:['食料が減った','貧富の差・身分の差が生まれた','戦争がなくなった','人口が激減した'],ans:1,exp:'稲作で食料が安定し人口が増える一方、収穫を蓄えた者が力を持ち、貧富の差・支配関係が生まれました。'},
+         {q:'弥生時代に増えたとされる遺跡は？',opts:['貝塚','環濠集落（堀に囲まれた村）','古墳','寺院'],ans:1,exp:'弥生時代には土地や収穫物を守るため、周りに堀をめぐらせた「環濠集落」が増えました。'}
+       ]},
+      {id:3,title:'前方後円墳って何のため？',subtitle:'——巨大建造物に込めた権力の見せ方。',keyword:'前方後円墳',
+       scene:'📍 古墳時代・巨大な土の山を建設中',
+       char1:{icon:'👑',name:'大王（豪族）',line:'この大きな墓を見よ！\n俺がいかに偉いか\n子孫に伝わるぞ！'},
+       char2:{icon:'🧒',name:'現代の子',line:'でかい建物で\n「すごい人」って示すのって\n今の高層ビルや大企業本社\nと同じじゃん！'},
+       eraLabel:'🏔️ 前方後円墳',eraIcon:'🏔️',
+       eraPoints:['鍵穴型の巨大土製墳墓（3〜7世紀）','作るのに数万人・数年かかったものも','内部に銅鏡・剣・勾玉など副葬品','仁徳天皇陵は全長486mで世界最大級','大きさで権力の大きさを示す仕組み'],
+       nowLabel:'🏢 現代の「権力の見せ方」',nowIcon:'🏢',
+       nowPoints:['高層ビル・大企業本社で力を示す','国家のシンボル（国会議事堂・宮殿）','オリンピック開催で国威を誇示する','億ションや高級車で富を見せる','SNSのフォロワー数も現代の「権力証明」'],
+       modernReaction:'「でかければ偉い」って\n原始的に見えるけど\n今もやってることじゃん！',
+       eraReply:'見た目で圧倒するのは\n人間の本能じゃ。\n形が変わっただけで\n本質は同じよ。',
+       quiz:[
+         {q:'前方後円墳が最も多く作られた時代は？',opts:['縄文時代','弥生時代','古墳時代','奈良時代'],ans:2,exp:'前方後円墳は古墳時代（3〜7世紀）に盛んに作られました。'},
+         {q:'日本最大の前方後円墳は？',opts:['高松塚古墳','仁徳天皇陵古墳（大山古墳）','箸墓古墳','稲荷山古墳'],ans:1,exp:'大阪府にある仁徳天皇陵古墳（大山古墳）は全長486mで世界最大級の墳墓のひとつです。'},
+         {q:'古墳に一緒に埋められた副葬品として代表的なものは？',opts:['お金・紙幣','鏡・剣・玉（三種の神器）','陶器・茶碗','書物・経典'],ans:1,exp:'鏡・剣・玉などの副葬品が古墳に納められ、権力の象徴とされました。'}
+       ]}
+    ,
+{
+          id:4,title:"土偶って何のため？",subtitle:"——祈りを込めた最古のフィギュア。",keyword:"土偶",
+          scene:"📍 縄文時代・集落の祭祀場",
+          char1:{icon:"🏺",name:"縄文人",line:"この土偶に祈れば\n豊かな恵みが\nもたらされるはずじゃ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"え、それって\nお守りとか\nおみくじと同じじゃん！"},
+          eraLabel:"縄文の土偶",eraIcon:"🏺",
+          eraPoints:["粘土で作った人形型の祭祀道具", "女性をかたどったものが多い（豊穣祈願）", "わざと壊して埋める風習があった", "全国で1万5千点以上出土", "縄文時代の精神文化を示す貴重な遺物"],
+          nowLabel:"現代のお守り・フィギュア",nowIcon:"🎎",
+          nowPoints:["神社のお守りで災難除けを祈る", "推しのフィギュアを飾って「守ってもらう」感覚", "スポーツ選手の験担ぎグッズ", "子宝・安産のお守り（今も同じ願い）", "形あるものに祈りを込める人間の本能は不変"],
+          modernReaction:"願いを込めて物を作るって\n今も昔も変わらない人間の本能だ！",
+          eraReply:"形があれば\n祈りが届く気がする。\nそれが人の心じゃ。",
+          quiz:[{q:"土偶が「わざと壊されて」いた理由として有力な説は？",opts:["ア）遊び道具だったから", "イ）祈りの儀式の一部として意図的に壊した", "ウ）戦争で壊された", "エ）材質が弱かっただけ"],ans:1,exp:"土偶は祈りの儀式の中で意図的に壊される「壊すことに意味がある道具」だったと考えられています。"},{q:"土偶に多く見られる特徴は？",opts:["ア）男性をかたどったものが多い", "イ）女性をかたどったものが多い（豊穣祈願）", "ウ）動物をかたどったものが多い", "エ）子どもをかたどったものが多い"],ans:1,exp:"土偶は女性をかたどったものが多く、豊穣（食料が豊かになること）や子孫繁栄を祈る道具だったと考えられています。"},{q:"日本全国で出土している土偶の数はおよそ？",opts:["ア）約500点", "イ）約3000点", "ウ）約1万5千点以上", "エ）約100万点"],ans:2,exp:"全国で1万5千点以上の土偶が発見されており、縄文時代の各地に祭祀文化が広まっていたことがわかります。"}]
+        },
+{
+          id:5,title:"貝塚って縄文のゴミ箱？",subtitle:"——当時の「食生活」が全部わかる。",keyword:"貝塚",
+          scene:"📍 縄文時代・海沿いの集落",
+          char1:{icon:"🐚",name:"縄文人",line:"食べ終わった貝は\nここに捨てるのじゃ。\n魚の骨も一緒に。"},
+          char2:{icon:"🧒",name:"現代の子",line:"それって\nゴミ捨て場じゃん！\nでもそれで\n生活がわかるんだ。"},
+          eraLabel:"縄文の貝塚",eraIcon:"🐚",
+          eraPoints:["貝殻・動物の骨・土器などを捨てた場所", "縄文人の食生活・生活様式がわかる", "関東地方に多く分布（大森貝塚が有名）", "人骨が埋葬されていることも", "数千年経っても保存状態が良い"],
+          nowLabel:"現代のゴミ箱・考古学",nowIcon:"🗑️",
+          nowPoints:["現代のゴミ捨て場も将来の考古学資料になる", "コンビニのゴミを分析すれば現代の食生活がわかる", "リサイクルの記録は未来の研究者への情報", "「ゴミ」は当時の生活を映す鏡", "ゴミの中身で文明の発展度がわかる"],
+          modernReaction:"ゴミ捨て場が歴史の宝庫になるって\n面白い！今のゴミも未来の考古学資料だ。",
+          eraReply:"食べた後の骨も貝も\n大地に返す。\nそれが自然の\n循環じゃよ。",
+          quiz:[{q:"日本で最初に本格的に調査された有名な貝塚は？",opts:["ア）吉野ヶ里貝塚", "イ）大森貝塚", "ウ）三内丸山貝塚", "エ）登呂貝塚"],ans:1,exp:"1877年にアメリカ人モースが発見・調査した大森貝塚（東京都）が日本の本格的な考古学の始まりとされています。"},{q:"貝塚からわかることとして正しくないのは？",opts:["ア）縄文人の食生活", "イ）当時の気候・海岸線", "ウ）縄文人の政治制度", "エ）縄文人の体の大きさ（人骨から）"],ans:2,exp:"貝塚から政治制度はわかりません。食生活・気候・人骨による体格などはわかりますが、政治的な記録は残りません。"},{q:"貝塚が関東地方に多い理由は？",opts:["ア）関東の人口が多かったから", "イ）関東に海や川が多く貝が豊富だったから", "ウ）関東の土壌が保存に適していたから", "エ）両方とも正解"],ans:3,exp:"関東には海・川・湖が多く貝類が豊富だったこと、また関東ローム層（火山灰の土）が骨や貝殻の保存に適していたことの両方が理由です。"}]
+        },
+{
+          id:6,title:"三内丸山遺跡って縄文の都市？",subtitle:"——5500年前に500人が暮らしていた。",keyword:"三内丸山遺跡",
+          scene:"📍 5500年前・青森　大規模集落",
+          char1:{icon:"🏛️",name:"縄文のリーダー",line:"この集落には\n500人が暮らしておる。\n6本柱の大型建物も\n作ったぞ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"え！縄文時代って\n小さな集落だけじゃないの？\n都市みたいな\n場所もあったんだ！"},
+          eraLabel:"三内丸山遺跡",eraIcon:"🏛️",
+          eraPoints:["青森県にある日本最大級の縄文遺跡", "約5500〜4000年前、最大500人以上が居住", "6本の大型掘立柱建物が発見された", "クリの栽培など農耕的な要素も", "長距離交易の痕跡（ヒスイ・アスファルト）"],
+          nowLabel:"現代の計画都市",nowIcon:"🏙️",
+          nowPoints:["計画的に区画された街づくり", "大型公共建築（役所・学校・病院）", "食料の計画的な生産・備蓄", "遠距離貿易・物流ネットワーク", "人口が集中することで文化が発展する"],
+          modernReaction:"5500年前に計画的な集落を作ってたのか。\n縄文人ってすごい。都市の原型じゃん！",
+          eraReply:"人が集まれば\n力が生まれる。\n一人では作れないものが\n作れるようになるんじゃ。",
+          quiz:[{q:"三内丸山遺跡がある都道府県は？",opts:["ア）北海道", "イ）岩手県", "ウ）青森県", "エ）秋田県"],ans:2,exp:"三内丸山遺跡は青森県青森市にあります。1992年に発見され、縄文時代の大規模集落の実態を大きく書き換えました。"},{q:"三内丸山遺跡で発見された特徴的な建造物は？",opts:["ア）石垣で囲まれた城", "イ）6本の大型掘立柱建物", "ウ）地下に作られた神殿", "エ）煉瓦造りの倉庫"],ans:1,exp:"6本の大型掘立柱建物は直径約80cmの柱を等間隔に並べた大型建造物で、倉庫や物見台だったと考えられています。"},{q:"三内丸山遺跡から長距離交易の証拠として発見されたものは？",opts:["ア）中国の陶磁器", "イ）新潟産のヒスイ・北海道産のアスファルト", "ウ）朝鮮半島の銅鏡", "エ）沖縄産のサンゴ"],ans:1,exp:"新潟産のヒスイや北海道産のアスファルトが発見され、遠距離の交易ネットワークが存在したことがわかります。"}]
+        },
+{
+          id:7,title:"弥生土器と縄文土器の違いは？",subtitle:"——「実用」vs「芸術」の対決。",keyword:"弥生土器",
+          scene:"📍 弥生時代・農村の土器作り",
+          char1:{icon:"🏺",name:"弥生の女性",line:"この土器は薄くて\n丈夫で使いやすい。\n煮炊きに\nぴったりじゃ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"縄文土器って\nデコボコして派手だったよね。\nこっちはシンプルで\n「機能重視」だ！"},
+          eraLabel:"縄文土器 vs 弥生土器",eraIcon:"🏺",
+          eraPoints:["縄文土器：厚くて装飾豊か（火焔型など）", "弥生土器：薄くて滑らか・実用的", "縄文は狩猟採集→保存・煮炊き用途", "弥生は農耕社会→大量生産・効率重視", "デザインの違いに社会構造の変化が表れる"],
+          nowLabel:"現代のデザイン思想",nowIcon:"🎨",
+          nowPoints:["アート重視のプロダクト（Apple製品など）", "機能重視の業務用製品", "「デザインと機能」のバランスは今も永遠のテーマ", "量産品は効率・コスト重視でシンプルに", "社会のニーズがデザインを変える"],
+          modernReaction:"縄文土器はアート系、弥生土器は実用系か。\nAppleのデザインと業務用PCの違いみたい！",
+          eraReply:"使いやすさを追求すると\n自然とシンプルになる。\nそれが\n「機能美」じゃよ。",
+          quiz:[{q:"縄文土器と弥生土器の最大の違いは？",opts:["ア）縄文は赤く、弥生は黒い", "イ）縄文は装飾豊かで厚く、弥生はシンプルで薄い", "ウ）縄文は大きく、弥生は小さい", "エ）縄文は粘土製、弥生は石製"],ans:1,exp:"縄文土器は装飾が豊かで厚みがあります。弥生土器は農耕社会の実用ニーズから薄くシンプルになりました。"},{q:"弥生土器の特徴として正しいのは？",opts:["ア）火焔型など複雑な装飾が特徴", "イ）薄くて滑らか・実用的", "ウ）縄目模様が特徴（縄文土器と同じ）", "エ）鉄製の道具で作られた"],ans:1,exp:"弥生土器は農耕社会の需要に応えるため、薄くて丈夫で実用的なデザインが特徴です。"},{q:"「縄文土器」という名前の由来は？",opts:["ア）縄で縛って焼いたから", "イ）縄目のような模様がつけられているから", "ウ）縄文時代に作られたから（時代名が先）", "エ）縄の形に似ているから"],ans:1,exp:"「縄文土器」の名前は、縄を転がして押し付けた縄目模様（縄文）が特徴的だったことが由来です。時代名「縄文時代」は土器の特徴から名付けられました。"}]
+        },
+{
+          id:8,title:"大和朝廷って日本初の統一政府？",subtitle:"——豪族たちをまとめた大王の力。",keyword:"大和朝廷",
+          scene:"📍 4〜5世紀・奈良盆地　大和政権の拠点",
+          char1:{icon:"👑",name:"大王（おおきみ）",line:"各地の豪族よ\n我に従え。\n共に強い国を\n作るのじゃ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"バラバラだった豪族を\nまとめたのか。\n企業の合併・\nM&Aみたいだ！"},
+          eraLabel:"大和朝廷",eraIcon:"👑",
+          eraPoints:["4〜7世紀、奈良盆地を中心に成立", "大王（後の天皇）が各地の豪族を従える", "前方後円墳の分布＝支配圏の広がりを示す", "中国・朝鮮から渡来人が技術をもたらす", "604年・十七条憲法（聖徳太子）で統治強化"],
+          nowLabel:"現代の企業統合・国家統一",nowIcon:"🤝",
+          nowPoints:["複数の企業が合併して大企業になる（M&A）", "地方分権から中央集権への移行", "「共通のルール」を作ることで組織を安定させる", "外部人材（渡来人）が技術革新をもたらす", "トップの権威を象徴で示すことが重要"],
+          modernReaction:"豪族をまとめて「日本」という国の原型を作ったのか。国家形成ってM&Aと同じ構造だ！",
+          eraReply:"力だけでは\n人はまとまらぬ。\n共通の目的と\n権威が必要じゃ。",
+          quiz:[{q:"大和朝廷の中心地はどこ？",opts:["ア）九州・博多", "イ）奈良盆地（大和）", "ウ）京都盆地", "エ）関東平野"],ans:1,exp:"大和朝廷は現在の奈良県（大和の国）を中心に成立しました。"},{q:"聖徳太子が制定した「十七条憲法」の目的は？",opts:["ア）民の権利を守るため", "イ）役人の心得・国家の統治方針を示すため", "ウ）外国との条約", "エ）税の制度を定めるため"],ans:1,exp:"十七条憲法は604年に制定された役人の心得・国家統治の方針を示したもので、「和を以て貴しとなす」が有名です。"},{q:"大和朝廷の支配が広がったことを示す考古学的証拠は？",opts:["ア）銅鏡の分布", "イ）前方後円墳の全国的な分布", "ウ）土器の様式の統一", "エ）文字記録の発見"],ans:1,exp:"前方後円墳が全国に広がって発見されており、大和朝廷の影響圏の拡大を示す証拠とされています。"}]
+        },
+{
+          id:9,title:"渡来人って古代の外国人労働者？",subtitle:"——技術と文化をもたらした人々。",keyword:"渡来人",
+          scene:"📍 5〜6世紀・日本列島　船が到着",
+          char1:{icon:"⛵",name:"渡来人",line:"私たちは\n朝鮮・中国から来た。\n機織り・鍛冶・\n文字を教えよう。"},
+          char2:{icon:"🧒",name:"現代の子",line:"それって今でいう\n高度外国人材じゃん！\nビザで来て\n技術を伝える感じ。"},
+          eraLabel:"渡来人の役割",eraIcon:"⛵",
+          eraPoints:["朝鮮半島・中国大陸から日本に移住した人々", "漢字・仏教・儒教・機織り・鍛冶技術をもたらす", "秦氏・東漢氏など有力な渡来人集団が活躍", "日本の古代国家形成に大きく貢献", "現在の日本人のDNAにも影響"],
+          nowLabel:"現代の高度外国人材",nowIcon:"🌍",
+          nowPoints:["IT・医療・研究分野の外国人専門家", "外国人技能実習制度（課題も多い）", "シリコンバレーは移民が支えた", "技術移転による国の発展", "多様な人材が社会を豊かにする"],
+          modernReaction:"渡来人がいなかったら日本の発展は遅れてたんだ。外国人材の受け入れって昔からある話なんだ！",
+          eraReply:"外からの知恵と技を\n取り入れて発展する。\nそれが日本の\n強さじゃよ。",
+          quiz:[{q:"渡来人がもたらしたものとして正しくないのは？",opts:["ア）漢字", "イ）仏教", "ウ）稲作（稲作はそれ以前に伝来）", "エ）機織りの技術"],ans:2,exp:"稲作は弥生時代（約2500年前）に伝来しており、渡来人（5〜6世紀）よりずっと前です。漢字・仏教・機織りなどは渡来人がもたらしました。"},{q:"渡来人の中で特に財政・土木などで活躍した有力氏族は？",opts:["ア）藤原氏", "イ）秦氏（はたし）", "ウ）源氏", "エ）平氏"],ans:1,exp:"秦氏は朝鮮半島から渡来した氏族で、養蚕・機織り・土木技術に優れ、京都の太秦（うずまさ）を拠点に活躍しました。"},{q:"渡来人が日本にもたらした宗教は？",opts:["ア）神道", "イ）仏教", "ウ）キリスト教", "エ）イスラム教"],ans:1,exp:"仏教は6世紀中頃（538年または552年）に百済（朝鮮半島）から日本に伝来しました。"}]
+        },
+{
+          id:10,title:"大化の改新って日本初の政治クーデター？",subtitle:"——蘇我氏を倒して国を作り直した。",keyword:"大化の改新",
+          scene:"📍 645年・飛鳥宮　宮中で暗殺事件勃発",
+          char1:{icon:"⚔️",name:"中大兄皇子",line:"今じゃ！\n蘇我入鹿を討て！\n新しい国家を\n作るのだ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"宮中でクーデター！\nそれって政権交代を\n暴力で起こした\nってこと？！"},
+          eraLabel:"大化の改新",eraIcon:"⚔️",
+          eraPoints:["645年、中大兄皇子・中臣鎌足が蘇我入鹿を暗殺", "豪族中心の政治から天皇中心の中央集権へ", "「大化」という最初の元号が制定された", "公地公民制（土地・人民は国のもの）を宣言", "律令国家（法律で統治する国）の基礎を作った"],
+          nowLabel:"現代の政権交代・クーデター",nowIcon:"🏛️",
+          nowPoints:["選挙による平和的な政権交代（現代の民主主義）", "軍事クーデターによる政権奪取（現代でも発生）", "権力が一極集中すると打倒される", "制度改革・法整備が「新政権の証」", "改革の理念が実行されるかが課題"],
+          modernReaction:"武力で政治を変えたのか。今は選挙でやるけど、変えようとする動機は同じだ。",
+          eraReply:"腐った権力は\nいつか倒される。\n変革の後に\n新しい秩序が生まれる。",
+          quiz:[{q:"大化の改新のきっかけとなった出来事は？",opts:["ア）天皇の崩御", "イ）蘇我入鹿の暗殺", "ウ）外国の侵略", "エ）農民の反乱"],ans:1,exp:"645年、中大兄皇子と中臣鎌足が宮中で蘇我入鹿を暗殺したことが大化の改新の始まりです。"},{q:"大化の改新で制定された「公地公民」の意味は？",opts:["ア）国民全員が平等という意味", "イ）土地・人民はすべて国（天皇）のものとする", "ウ）公務員制度の創設", "エ）外国との公式外交"],ans:1,exp:"公地公民制は、豪族が持っていた土地と人民をすべて国（天皇）のものとする制度で、中央集権化の第一歩でした。"},{q:"中大兄皇子の後の名前は？",opts:["ア）天武天皇", "イ）天智天皇", "ウ）聖武天皇", "エ）桓武天皇"],ans:1,exp:"中大兄皇子は後に即位して天智天皇となりました。大化の改新を主導し、律令国家の基礎を作りました。"}]
+        }
+]
+  },
+  {
+    id:'nara',cls:'nara',icon:'🌸',name:'奈良・平安',period:'700〜1100年ごろ',
+    sub:'摂関政治・国風文化・荘園制度',
+    bgVar:'--era-nara-bg',accentVar:'--era-nara-accent',textVar:'--era-nara-text',badge:'古代',
+    aiTopics:['摂関政治','国風文化','荘園制度','遣唐使','平仮名の誕生','源氏物語','大宰府','聖武天皇と大仏','平安京','藤原氏の支配'],
+    episodes:[
+      {id:1,title:'摂関政治って親のコネ政治？',subtitle:'——娘を天皇に嫁がせて権力を握る。',keyword:'摂関政治',
+       scene:'📍 平安時代・藤原道長の邸宅',
+       char1:{icon:'👴',name:'藤原道長',line:'娘を4人も后にした。\n天皇の義父じゃから\n実権はこちらにある。\nこの世は我が世じゃ！'},
+       char2:{icon:'🧒',name:'現代の子',line:'それって完全に\nコネと縁故採用じゃん！\nしかも超長期政権…'},
+       eraLabel:'💍 摂関政治',eraIcon:'💍',
+       eraPoints:['娘を天皇に嫁がせ外戚として権力を握る','摂政（天皇幼少時）・関白（成人後）として政治を牛耳る','藤原道長は「この世をば我が世とぞ思ふ」と詠むほどの絶頂','武力ではなく婚姻・血縁で支配する仕組み','貴族社会のトップが政治・文化を独占'],
+       nowLabel:'🤝 現代のコネ・縁故',nowIcon:'🤝',
+       nowPoints:['有力者の親族が要職に就く「縁故採用」','政治家の二世・三世問題','投資家・財閥が政界に影響力を持つ','「誰を知っているか」が出世を左右する','実力より人脈が物を言う業界は今もある'],
+       modernReaction:'武力じゃなく「娘婿」になることで\n権力を握るって\n平和的だけどえげつない…',
+       eraReply:'刀を使わずとも\n血のつながりで\n国を動かせる。\nそれが貴族の知恵じゃ。',
+       quiz:[
+         {q:'摂関政治を最も栄えさせた人物は？',opts:['菅原道真','藤原道長','聖武天皇','源頼朝'],ans:1,exp:'藤原道長は4人の娘を天皇の后にし、絶大な権力を握りました。'},
+         {q:'「摂政」とは何をする役職？',opts:['天皇の代わりに政治を行う','外国との交渉をする','軍を率いる','税を集める'],ans:0,exp:'摂政は天皇が幼少・女性の場合などに代わって政治を行う役職です。'},
+         {q:'藤原氏が権力を持てた最大の理由は？',opts:['武力が最強','娘を天皇に嫁がせ外戚として力を持った','経済力で他を圧倒した','外国の援助があった'],ans:1,exp:'藤原氏は娘を天皇の后にし、生まれた子が天皇になると外戚として政治を牛耳りました。'}
+       ]},
+      {id:2,title:'国風文化って日本オリジナルの誕生？',subtitle:'——中国マネから脱した瞬間。',keyword:'国風文化',
+       scene:'📍 平安時代・貴族の邸宅　深夜の書斎',
+       char1:{icon:'📝',name:'紫式部',line:'漢字では女の心が\n書き切れない。\n仮名で書こう——\n物語を。'},
+       char2:{icon:'🧒',name:'現代の子',line:'英語じゃなく日本語で\n作品を作るって\n今の「ガラパゴス文化」\nの始まりじゃん！'},
+       eraLabel:'🖌️ 国風文化',eraIcon:'🖌️',
+       eraPoints:['894年、遣唐使停止で大陸文化の流入が激減','漢字を崩した平仮名・片仮名が誕生','源氏物語・枕草子など女性文学が花開く','寝殿造・大和絵など日本独自の美術様式','「もののあわれ」など日本的感性が生まれる'],
+       nowLabel:'🇯🇵 現代の日本独自文化',nowIcon:'🇯🇵',
+       nowPoints:['アニメ・マンガ・ゲームは世界的に独自進化','「ガラケー」など日本特有の進化形も','和食・茶道・能は無形文化遺産に','JPOPは独自の音楽スタイルを確立','外来文化を「日本化」する力は今も健在'],
+       modernReaction:'外国に頼らず「日本らしさ」を作ったのが\n国風文化なんだ。\nアニメも同じ流れだ！',
+       eraReply:'外を模倣するうちは\n二流じゃ。\n自分の言葉で書いて\n初めて一流になれる。',
+       quiz:[
+         {q:'国風文化が発展したきっかけは？',opts:['遣唐使の派遣が増えた','894年に菅原道真が遣唐使を停止した','鎖国が始まった','戦争で大陸との交流が途絶えた'],ans:1,exp:'894年、菅原道真の進言で遣唐使が停止され、日本独自の文化が花開きました。'},
+         {q:'国風文化を代表する文学作品は？',opts:['日本書紀','万葉集','源氏物語・枕草子','古事記'],ans:2,exp:'紫式部の「源氏物語」、清少納言の「枕草子」は国風文化を代表する作品です。'},
+         {q:'平仮名の特徴として正しいのは？',opts:['漢字をそのまま使った','漢字の形を崩して生まれた日本独自の文字','外国から輸入した文字','武士が発明した'],ans:1,exp:'平仮名は漢字の草書（崩し書き）から生まれた日本独自の文字です。'}
+       ]},
+      {id:3,title:'荘園って税なし私有地の始まり？',subtitle:'——「ここには国は入れません」のカラクリ。',keyword:'荘園',
+       scene:'📍 平安時代・貴族の広大な農地',
+       char1:{icon:'👒',name:'貴族の代官',line:'この土地は\n藤原家の荘園じゃ！\n役人は立入禁止！\n税も免除じゃ！'},
+       char2:{icon:'😤',name:'国の役人',line:'また税が取れない土地が\n増えた…\n国の財政が\nボロボロになる…'},
+       eraLabel:'🌾 荘園制度',eraIcon:'🌾',
+       eraPoints:['貴族・寺社が土地を私有化した「荘園」が全国に拡大','不輸の権：国への税が免除される','不入の権：国の役人が立ち入れない','公地公民制（国が土地・人民を管理）が崩壊していく','武士が荘園の警備に雇われ力をつけていく'],
+       nowLabel:'🏦 現代のタックスヘイブン',nowIcon:'🏦',
+       nowPoints:['タックスヘイブン（租税回避地）に資産を移す大企業','合法的に税負担を下げる「節税スキーム」','国が課税できない「抜け穴」が財政を圧迫','富裕層・大企業と一般市民の税負担格差','国際的な課税強化（BEPS規制）が現代の対策'],
+       modernReaction:'荘園って「タックスヘイブン」じゃん！\n形は違っても\n「権力者が税を逃れる」のは\n今も昔も同じ！',
+       eraReply:'力のある者が\n有利なルールを作る。\nそれがどの時代も\n変わらぬ真実じゃ。',
+       quiz:[
+         {q:'荘園が増えた理由として正しいのは？',opts:['幕府が奨励したから','貴族や寺社が土地を私有化し不輸・不入権を得たから','農民が自発的に作ったから','天皇が全国に配ったから'],ans:1,exp:'荘園は貴族や寺社が土地を私有化したもの。税免除と役人立入禁止の特権を得て、国の支配が及ばなくなりました。'},
+         {q:'荘園が広がったことで国にとってどんな問題が起きた？',opts:['農業生産量が下がった','税収が激減し国の財政が弱まった','武士が消えた','人口が減った'],ans:1,exp:'荘園が増えると課税できる土地が減り、国の税収が激減しました。'},
+         {q:'荘園を守るために雇われ、後に力をつけていったのは？',opts:['商人','農民','武士','僧侶'],ans:2,exp:'荘園の警備のために雇われた武士たちは、やがて独自の武士団を形成し鎌倉幕府へとつながります。'}
+       ]}
+    ,
+{
+          id:4,title:"遣唐使って命がけの留学？",subtitle:"——嵐の海を渡って最先端を学んだ。",keyword:"遣唐使",
+          scene:"📍 7〜9世紀・難波の港　出発の朝",
+          char1:{icon:"⛵",name:"遣唐使の学者",line:"唐（中国）へ行き\n最先端の文化を\n学んできます。\n…生きて帰れれば。"},
+          char2:{icon:"🧒",name:"現代の子",line:"嵐で沈む船で\n中国まで行くって\nシリコンバレー留学より\nずっと命がけだ！"},
+          eraLabel:"遣唐使",eraIcon:"⛵",
+          eraPoints:["630〜894年、約20回派遣", "4隻の船で渡航・遭難も多かった", "律令・仏教・文化・技術を持ち帰る", "阿倍仲麻呂・吉備真備・空海などが参加", "894年、菅原道真の建議で廃止"],
+          nowLabel:"現代の海外留学・研修",nowIcon:"✈️",
+          nowPoints:["米国・欧州への奨学金留学", "命の危険はないが経済的コストは大きい", "最先端の技術・文化を持ち帰る役割は同じ", "帰国後に社会を変える人材になる", "「外を知る者」が国を引っ張る"],
+          modernReaction:"命をかけて最先端を学びに行くって\n現代の留学と動機は全く同じだ！",
+          eraReply:"知識を得るためなら\n命をかける価値がある。\nそれが\n学びの本質じゃ。",
+          quiz:[{q:"遣唐使が廃止されたのはいつ、誰の建議による？",opts:["ア）894年・菅原道真", "イ）710年・藤原不比等", "ウ）752年・行基", "エ）838年・空海"],ans:0,exp:"894年、菅原道真が「唐の衰退と渡航の危険」を理由に遣唐使の廃止を建議し、以後派遣されなくなりました。"},{q:"遣唐使として唐に渡り、帰国できずに唐で生涯を終えた人物は？",opts:["ア）空海", "イ）最澄", "ウ）阿倍仲麻呂", "エ）吉備真備"],ans:2,exp:"阿倍仲麻呂は唐に渡り玄宗皇帝に仕える高官となりましたが、帰国の船が難破し再度唐に戻り、そのまま唐で没しました。"},{q:"遣唐使が日本に持ち帰ったものとして正しくないのは？",opts:["ア）律令制度", "イ）仏教の経典・技術", "ウ）火薬の製造法", "エ）漢詩・文学"],ans:2,exp:"遣唐使は律令・仏教・文学・音楽・絵画などを持ち帰りましたが、火薬の製造法は持ち帰っていません。"}]
+        },
+{
+          id:5,title:"聖武天皇と東大寺大仏って国家プロジェクト？",subtitle:"——仏の力で国を守ろうとした。",keyword:"東大寺大仏",
+          scene:"📍 8世紀・奈良　大仏建立工事",
+          char1:{icon:"🏛️",name:"聖武天皇",line:"全国に国分寺を建て\n奈良に大仏を造る！\n仏の加護で\n国を安定させるのだ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"国家予算で\n巨大モニュメントを建てて\n国民の心を一つにする。\nオリンピックと同じ発想だ！"},
+          eraLabel:"東大寺大仏建立",eraIcon:"🏛️",
+          eraPoints:["743年、聖武天皇が大仏造立の詔を出す", "飢饉・疫病・反乱が相次ぐ不安な時代", "高さ約15m、延べ260万人が工事に参加", "国家の財政を大きく圧迫した", "行基が民衆への普及に貢献"],
+          nowLabel:"現代の国家プロジェクト",nowIcon:"🏗️",
+          nowPoints:["東京オリンピック（国家の威信を示す）", "万博・国際イベントで国民を一つに", "危機の時代に大型公共事業で雇用創出", "巨大建造物は権力と安定の象徴", "莫大な費用対効果の議論は今も続く"],
+          modernReaction:"不安な時代に巨大プロジェクトで国民をまとめる。東京オリンピックと全く同じ発想じゃん！",
+          eraReply:"人々の心が\nバラバラな時こそ\n共通の目標が\n必要なのじゃ。",
+          quiz:[{q:"東大寺大仏建立を命じた天皇は？",opts:["ア）天武天皇", "イ）聖武天皇", "ウ）光明天皇", "エ）桓武天皇"],ans:1,exp:"743年、聖武天皇が「廬舎那仏（るしゃなぶつ）」の造立を命じました。疫病や反乱が続く不安定な時代に、仏の力で国を守ろうとしました。"},{q:"大仏建立に民衆の協力を集めた僧侶は？",opts:["ア）空海", "イ）最澄", "ウ）行基", "エ）鑑真"],ans:2,exp:"行基は民衆に仏教を広め、大仏建立への協力を呼びかけました。当初は政府に弾圧されていましたが、後に協力を求められました。"},{q:"奈良の大仏（東大寺盧舎那仏）の高さはおよそ？",opts:["ア）約5m", "イ）約10m", "ウ）約15m", "エ）約25m"],ans:2,exp:"東大寺の大仏は高さ約14.98m（約15m）。奈良時代に造られた当初のものは戦火で何度か焼かれ、現在のものは江戸時代に再建されたものです。"}]
+        },
+{
+          id:6,title:"平安京遷都って首都移転？",subtitle:"——なぜ奈良から京都に引っ越したのか。",keyword:"平安京遷都",
+          scene:"📍 794年・長岡京から平安京へ",
+          char1:{icon:"🏯",name:"桓武天皇",line:"奈良の仏教勢力が\n強くなりすぎた。\n新しい都で\n天皇の権威を取り戻す！"},
+          char2:{icon:"🧒",name:"現代の子",line:"政治的な理由で\n首都を移すのか。\n今でも\n首都移転論があるよね。"},
+          eraLabel:"平安京遷都",eraIcon:"🏯",
+          eraPoints:["794年、桓武天皇が奈良から京都（平安京）に遷都", "奈良の寺院勢力（南都六宗）の政治介入を避けるため", "唐の長安をモデルにした碁盤の目状の都市計画", "「平安」という名の通り平和を願った", "以後1000年以上、京都が日本の都となる"],
+          nowLabel:"現代の首都移転論",nowIcon:"🏙️",
+          nowPoints:["日本でも首都機能移転が議論されている", "東京一極集中の解消が目的", "災害リスク分散（首都直下地震対策）", "政治と宗教・経済の分離という発想", "ブラジル（ブラジリア）やミャンマーなど実際に移転した国も"],
+          modernReaction:"政治的な理由で首都を移すのは今も昔も同じだ。東京一極集中の問題と全く同じ発想で解決しようとしてる！",
+          eraReply:"権力が一か所に\n集中しすぎると\n腐敗する。\n新しい場所が\n新しい秩序を生む。",
+          quiz:[{q:"平安京に遷都した天皇は？",opts:["ア）聖武天皇", "イ）桓武天皇", "ウ）嵯峨天皇", "エ）醍醐天皇"],ans:1,exp:"794年、桓武天皇が現在の京都に平安京を造営して遷都しました。「平安」の名は平和を願ってつけられました。"},{q:"桓武天皇が平安京に遷都した最大の理由は？",opts:["ア）奈良の気候が悪かったから", "イ）奈良の寺院勢力が政治に介入しすぎたため", "ウ）外国の侵略を避けるため", "エ）経済的に奈良が発展しすぎたため"],ans:1,exp:"奈良時代末期、道鏡事件などに見られるように仏教勢力が政治に介入する問題が起きました。桓武天皇はその影響を断ち切るため遷都しました。"},{q:"平安京の都市設計のモデルとなった都市は？",opts:["ア）長安（唐の都）", "イ）洛陽（後漢の都）", "ウ）平壌（高句麗の都）", "エ）金城（新羅の都）"],ans:0,exp:"平安京は唐（中国）の都・長安をモデルに設計されました。碁盤の目状の区画整理が特徴です。"}]
+        },
+{
+          id:7,title:"かな文字って日本語のOSアップデート？",subtitle:"——漢字から生まれた日本独自の文字。",keyword:"かな文字",
+          scene:"📍 平安時代・宮廷の女房の部屋",
+          char1:{icon:"✍️",name:"宮廷の女性",line:"漢字では\n日本語の気持ちが\n書き切れない。\n仮名で書こう！"},
+          char2:{icon:"🧒",name:"現代の子",line:"英語のアルファベットを\n使わずに\n日本語専用の文字を\n作ったってこと？！"},
+          eraLabel:"かな文字の成立",eraIcon:"✍️",
+          eraPoints:["漢字の草書（崩し書き）から平仮名が成立", "漢字の一部から片仮名が成立", "9〜10世紀に普及・使用が広まる", "女性を中心に使用→「女手」とも呼ばれた", "源氏物語・枕草子などの文学を可能にした"],
+          nowLabel:"現代の文字・プログラミング言語",nowIcon:"💻",
+          nowPoints:["英語ベースのプログラムを日本語で直感的に使えるようにする試み", "日本語変換技術（IME）も「翻訳」の一形態", "絵文字（emoji）は日本発の「新しい文字」として世界に広まった", "言語は「使いやすさ」のために常に進化する", "母語で表現できる文字が文化を豊かにする"],
+          modernReaction:"漢字から日本語専用の文字を作るって\n完全に「日本語対応のOSアップデート」じゃん！",
+          eraReply:"言葉は心を\n映す鏡じゃ。\n自分の言葉で\n書いてこそ\n本当の表現ができる。",
+          quiz:[{q:"平仮名はどのようにして生まれた？",opts:["ア）漢字の楷書をそのまま使った", "イ）漢字の草書（崩し書き）を簡略化して生まれた", "ウ）朝鮮のハングルを参考に作られた", "エ）空海が一人で作り上げた"],ans:1,exp:"平仮名は漢字の草書（崩した書き方）を簡略化して生まれました。例えば「あ」は「安」の草書体から来ています。"},{q:"平仮名が「女手」とも呼ばれた理由は？",opts:["ア）女性が発明したから", "イ）平安時代の宮廷女性を中心に使用されたから", "ウ）漢字より女性的な見た目だから", "エ）男性には使用が禁止されていたから"],ans:1,exp:"平安時代、漢字（真名）は男性の公式文書に使われ、平仮名（仮名）は主に宮廷の女性が日記・物語・和歌に使ったため「女手」と呼ばれました。"},{q:"かな文字が普及したことで生まれた文学作品は？",opts:["ア）日本書紀・古事記", "イ）源氏物語・枕草子", "ウ）万葉集（一部）", "エ）続日本紀"],ans:1,exp:"かな文字の普及により、紫式部の「源氏物語」（世界最古の長編小説とも）や清少納言の「枕草子」など、平安文学の傑作が生まれました。"}]
+        },
+{
+          id:8,title:"院政って「引退してから支配」？",subtitle:"——天皇を辞めた後が本番だった。",keyword:"院政",
+          scene:"📍 11〜12世紀・法皇の御所",
+          char1:{icon:"👴",name:"白河法皇",line:"天皇を退いたが\n実権はこちらにある。\n摂関家にも\n邪魔はさせぬ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"引退したのに\n実権を握り続ける…\n会長になっても\n会社を動かす創業者みたいだ！"},
+          eraLabel:"院政",eraIcon:"👴",
+          eraPoints:["天皇が退位して「上皇」「法皇」になった後も政治を行う仕組み", "1086年、白河上皇が始めた", "摂関政治（藤原氏）の支配を打ち破る手段", "上皇の御所「院」から政治を行うため「院政」", "鳥羽・後白河上皇も院政を行った"],
+          nowLabel:"現代の「院政」",nowIcon:"🏢",
+          nowPoints:["創業者が会長になっても経営に関与し続ける", "「名誉顧問」として影響力を保持", "前社長が後継者の決定に介入する", "政界での「院政」——派閥の元会長が実権を握る", "形式上の権力者と実質的な権力者が違う構造"],
+          modernReaction:"表向きは引退しても実権は手放さないって\n今の大企業の創業者や政界の長老と同じ構造だ！",
+          eraReply:"権力は手放したと\n見せかけて\n手元に置いておく。\nそれが\n長生きする知恵じゃ。",
+          quiz:[{q:"院政を始めたとされる上皇は？",opts:["ア）後鳥羽上皇", "イ）白河上皇", "ウ）後白河上皇", "エ）鳥羽上皇"],ans:1,exp:"1086年、白河天皇が堀河天皇に譲位して上皇となり、院政を開始しました。以後約100年、院政が続きました。"},{q:"院政が「摂関政治」を打ち破れた理由は？",opts:["ア）武力で藤原氏を滅ぼしたから", "イ）上皇は藤原氏の摂政・関白の影響を受けない立場だったから", "ウ）外国の力を借りたから", "エ）民衆の支持を得たから"],ans:1,exp:"天皇には摂政・関白が任命されますが、上皇（退位した天皇）にはその制度が適用されないため、藤原氏の影響を受けずに政治ができました。"},{q:"院政期に力をつけ、後の武家政権につながっていく勢力は？",opts:["ア）仏教寺院", "イ）武士（平氏・源氏）", "ウ）荘園領主", "エ）商人"],ans:1,exp:"院政期、上皇は警護や荘園管理のために武士を用いました。これにより平氏・源氏などの武士が台頭し、後の武家政権につながりました。"}]
+        },
+{
+          id:9,title:"平清盛って日本初のビジネス政治家？",subtitle:"——貿易で富を築き、武士が政権を取った。",keyword:"平清盛",
+          scene:"📍 12世紀・大輪田泊（神戸港の前身）",
+          char1:{icon:"⚓",name:"平清盛",line:"日宋貿易を拡大して\n巨富を得る。\n武士でも\n政権が取れるのだ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"経済力で\n政治権力を手にした。\n貿易立国・\n経済政治家みたいだ！"},
+          eraLabel:"平清盛の台頭",eraIcon:"⚓",
+          eraPoints:["武士として初めて太政大臣になった（1167年）", "日宋貿易を積極的に推進し巨富を築く", "神戸（大輪田泊）の港を整備", "一族で高位を独占→「平氏にあらずんば人にあらず」", "後白河法皇と対立→源平合戦へ"],
+          nowLabel:"現代の経済政治家",nowIcon:"💰",
+          nowPoints:["経済界出身の政治家・実業家の政界進出", "貿易政策で国の経済力を高める", "港湾・インフラ整備が国力の源泉", "「富があれば権力が得られる」は今も変わらない", "権力の独占は必ず反発を招く"],
+          modernReaction:"武力だけじゃなく経済力で政権を取ったのか。現代の実業家が政界に進出するのと同じ発想だ！",
+          eraReply:"刀だけでは\n国は治められぬ。\n富があって\n初めて力になる。",
+          quiz:[{q:"平清盛が武士として初めて就いた最高位の官職は？",opts:["ア）征夷大将軍", "イ）太政大臣", "ウ）摂政", "エ）関白"],ans:1,exp:"1167年、平清盛は武士として初めて太政大臣（朝廷の最高職）に就任しました。"},{q:"平清盛が積極的に推進した貿易は？",opts:["ア）日明貿易", "イ）日宋貿易", "ウ）日元貿易", "エ）南蛮貿易"],ans:1,exp:"平清盛は中国の宋（そう）との貿易（日宋貿易）を積極的に推進し、巨富を築きました。神戸の港（大輪田泊）を整備して貿易の拠点としました。"},{q:"「平氏にあらずんば人にあらず」という言葉が示すことは？",opts:["ア）平氏は人口が多かった", "イ）平氏が権力を独占し他を圧倒していた", "ウ）平氏は身分が低かった", "エ）平氏は外国人だった"],ans:1,exp:"平家の全盛期、一族が朝廷の高位を独占し、「平氏でなければ人ではない」と言われるほど権勢を誇りました。この傲慢さが源氏などの反発を招きました。"}]
+        },
+{
+          id:10,title:"源平合戦って日本初の天下分け目の戦い？",subtitle:"——武士の時代の始まりを告げた戦争。",keyword:"源平合戦",
+          scene:"📍 1185年・壇ノ浦　最後の決戦",
+          char1:{icon:"⚔️",name:"源義経",line:"壇ノ浦にて\n平家を滅ぼす！\n武士の世が\n始まるのだ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"政権を巡る\n大企業同士の争いが\n全面戦争になった感じ。\nまるで企業買収合戦だ！"},
+          eraLabel:"源平合戦",eraIcon:"⚔️",
+          eraPoints:["1180〜1185年、源氏と平氏の全国規模の内戦", "富士川・一ノ谷・屋島・壇ノ浦の戦いが有名", "源義経の奇策（鵯越の逆落とし）が勝敗を決した", "1185年、壇ノ浦で平家滅亡", "源頼朝が鎌倉幕府を開き武家政権の時代へ"],
+          nowLabel:"現代の企業覇権争い",nowIcon:"🏆",
+          nowPoints:["市場の覇権を巡る大企業間の競争", "GAFAとそれに挑戦する企業の戦い", "「勝者総取り」の構造は変わらない", "戦略・奇策・同盟関係が勝敗を左右する", "勝者が「新しいルール（幕府）」を作る"],
+          modernReaction:"源平合戦って市場の覇権争いと同じ構造だ。勝った側が新しいルールを作るのは今の経済も同じ！",
+          eraReply:"天下を取った者が\n新しい秩序を作る。\nそれが\n歴史の常じゃ。",
+          quiz:[{q:"源平合戦で平家が最終的に滅亡した戦いは？",opts:["ア）富士川の戦い", "イ）一ノ谷の戦い", "ウ）壇ノ浦の戦い", "エ）屋島の戦い"],ans:2,exp:"1185年、山口県の壇ノ浦（関門海峡）での海戦で平家が滅亡しました。安徳天皇も入水しました。"},{q:"「鵯越の逆落とし」で活躍した源氏の武将は？",opts:["ア）源頼朝", "イ）源義経", "ウ）源範頼", "エ）源義仲"],ans:1,exp:"源義経が一ノ谷の戦いで、馬で急峻な崖（鵯越）を駆け下りて平家の背後を突く奇策「逆落とし」を行い、大勝利を収めました。"},{q:"源平合戦の結果として起きたことは？",opts:["ア）天皇の権威が復活した", "イ）源頼朝が鎌倉幕府を開き武家政権が成立した", "ウ）藤原氏が再び政権を握った", "エ）朝廷が平安京から移転した"],ans:1,exp:"源平合戦に勝利した源頼朝は1185年（または1192年）に鎌倉幕府を開設し、武士による政権（武家政権）の時代が始まりました。"}]
+        }
+]
+  },
+  {
+    id:'kamakura',cls:'kamakura',icon:'⛩️',name:'鎌倉・室町',period:'1100〜1500年ごろ',
+    sub:'御恩と奉公・守護地頭・応仁の乱',
+    bgVar:'--era-kamakura-bg',accentVar:'--era-kamakura-accent',textVar:'--era-kamakura-text',badge:'中世',
+    aiTopics:['御恩と奉公','守護地頭','御成敗式目','元寇','南北朝','応仁の乱','勘合貿易','一揆','禅宗と文化','室町の産業'],
+    episodes:[
+      {id:1,title:'御恩と奉公って忠誠心の契約書？',subtitle:'——土地をあげるから命を捧げてくれ。',keyword:'御恩と奉公',
+       scene:'📍 鎌倉時代・将軍と御家人の謁見',
+       char1:{icon:'⚔️',name:'将軍',line:'お前の先祖からの\n土地を保証しよう。\n（御恩）\nその代わり命がけで\n戦え。（奉公）'},
+       char2:{icon:'🧒',name:'現代の子',line:'それって「給料を出すから\n会社のために尽くせ」\nっていう雇用契約じゃん！'},
+       eraLabel:'🤝 御恩と奉公',eraIcon:'🤝',
+       eraPoints:['将軍が御家人に土地・地位を保証（御恩）','御家人は将軍のために命がけで戦う（奉公）','双方の「利益」が一致する間は安定','元寇後、恩賞の土地がなく御家人の不満爆発','御恩と奉公が崩れ→鎌倉幕府滅亡へ'],
+       nowLabel:'💼 現代の雇用契約',nowIcon:'💼',
+       nowPoints:['会社が給与・福利厚生を保証（御恩）','社員が労働・忠誠心を捧げる（奉公）','「見返りがない」と感じると離職・転職','終身雇用の崩壊＝御恩と奉公の崩壊','フリーランス増加は「一人御家人」化？'],
+       modernReaction:'御恩と奉公って\n会社員と会社の関係と同じじゃん！\n見返りがなくなると\n崩れるのも一緒だ。',
+       eraReply:'恩があるから忠義がある。\n恩がなければ\n誰も命は張らぬ。\nそれが人の道理じゃ。',
+       quiz:[
+         {q:'御恩の内容として正しいのは？',opts:['将軍が武士に命令する','将軍が武士に土地を与え地位を保証する','武士が将軍に税を納める','武士が将軍の代わりに戦う'],ans:1,exp:'「御恩」は将軍が御家人に土地を与え地位を保障すること。「奉公」は武士が将軍のために戦い警備することです。'},
+         {q:'御恩と奉公の関係が崩れた原因は？',opts:['農民の反乱','元寇での恩賞不足','外国との貿易摩擦','天皇の権力強化'],ans:1,exp:'元寇は海外からの侵略だったため、勝っても奪う土地がなく、御家人に十分な恩賞を与えられませんでした。'},
+         {q:'鎌倉幕府を開いた人物は？',opts:['平清盛','源義経','源頼朝','足利尊氏'],ans:2,exp:'源頼朝が1185年（または1192年）に鎌倉に幕府を開き、武家政権の始まりとなりました。'}
+       ]},
+      {id:2,title:'元寇って史上最大のピンチ？',subtitle:'——台風が日本を救ったってホント？',keyword:'元寇',
+       scene:'📍 1274年・博多湾　元軍が上陸',
+       char1:{icon:'⚔️',name:'元軍の兵士',line:'「てつはう」発射！\n集団で攻めよ！\n日本の一騎討ちなど\n相手にならぬ！'},
+       char2:{icon:'😰',name:'鎌倉武士',line:'火薬の爆発音が怖い…\n集団戦法に慣れてない…\nでも神風が吹いた！'},
+       eraLabel:'⚡ 元寇',eraIcon:'⚡',
+       eraPoints:['フビライ・ハンが2度の日本遠征（文永・弘安の役）','集団戦法と火薬兵器「てつはう」で日本軍を圧倒','2度とも暴風（神風）で元軍の船が壊滅','「神国・日本」という意識が強まる','勝ったのに恩賞の土地がなく御家人が怒り→幕府衰退'],
+       nowLabel:'🌍 現代のサイバー攻撃',nowIcon:'🌍',
+       nowPoints:['戦い方のルールが一変する「ゲームチェンジャー」','自分たちの常識が通じない戦い方に大混乱','サイバー攻撃・ドローン・AIが現代の「てつはう」','勝っても後始末（復興・補償）で国が疲弊する','「神風頼み」→現代は「技術・同盟」が生命線'],
+       modernReaction:'火薬が「ゲームチェンジャー」だったのは\n今のドローンやAIと同じ構造だ！\nルールを変えた側が有利になる。',
+       eraReply:'新しい武器には\n新しい戦い方が必要じゃ。\n慣例を守るだけでは\n生き残れぬ。',
+       quiz:[
+         {q:'元寇が起きた時の元（モンゴル）の皇帝は？',opts:['チンギス・ハン','フビライ・ハン','オゴデイ・ハン','バトゥ'],ans:1,exp:'13世紀、元（モンゴル帝国）の皇帝フビライ・ハンが日本に2度の大規模遠征を行いました。'},
+         {q:'元軍の集団戦法に対して日本の武士が驚いたのは？',opts:['象を使った戦い','集団戦法と火薬兵器（てつはう）','弓矢の精度','騎馬の速さ'],ans:1,exp:'元軍は集団で組織的に戦い、火薬兵器「てつはう」を使用。一騎討ちに慣れた日本の武士は大いに苦戦しました。'},
+         {q:'元寇の後、鎌倉幕府が衰退した理由は？',opts:['元に負けたから','御家人への恩賞が不十分で御恩と奉公の関係が壊れたから','天皇が幕府を廃止したから','黒死病が流行したから'],ans:1,exp:'元寇には勝ったものの、奪える土地がなく御家人への恩賞が不十分でした。不満を持った武士が幕府から離れていきました。'}
+       ]},
+      {id:3,title:'応仁の乱って100年戦争の始まり？',subtitle:'——将軍のお家騒動が日本を分裂させた。',keyword:'応仁の乱',
+       scene:'📍 1467年・京都　火の海',
+       char1:{icon:'🔥',name:'細川勝元',line:'将軍後継は\n我らの推す者じゃ！\nいざ開戦！'},
+       char2:{icon:'🔥',name:'山名宗全',line:'何を言う！\nこちらが正統じゃ！\n（こうして京都が燃えた）'},
+       eraLabel:'💥 応仁の乱',eraIcon:'💥',
+       eraPoints:['足利将軍家の後継者争い＋有力大名の対立が引き金','1467〜1477年の約11年間、京都が戦場に','「下剋上」の風潮が広まり戦国時代へ突入','室町幕府の権威が地に落ちる','貴族文化が地方に拡散し、地方文化が発展'],
+       nowLabel:'🏢 現代の後継者問題',nowIcon:'🏢',
+       nowPoints:['大企業・中小企業の「社長交代問題」','派閥争いが会社を傾ける','政党内の権力闘争が国政を停滞させる','「誰が次のトップか」で組織が揺れる','後継者が不明確だと組織全体が不安定に'],
+       modernReaction:'後継者問題で組織が崩れるのは\n今の会社でも政党でも同じじゃん。\n「誰が次のトップか」って\nそんなに大事なんだ。',
+       eraReply:'トップが決まらなければ\n下が争う。\nそれがいつの世も\n変わらぬ人の性じゃ。',
+       quiz:[
+         {q:'応仁の乱のきっかけは？',opts:['農民の大規模一揆','足利将軍家の後継者争いと有力大名の対立','外国の侵略','天皇の政治改革'],ans:1,exp:'足利将軍家の後継者問題に、細川氏と山名氏の争いが絡み1467年に応仁の乱が勃発しました。'},
+         {q:'応仁の乱の結果として起きたことは？',opts:['幕府の権力が強まった','戦国時代が始まり下剋上の風潮が広まった','元との貿易が増えた','天皇の権力が回復した'],ans:1,exp:'応仁の乱で幕府の権力は弱まり、「下剋上」の戦国時代へと突入しました。'},
+         {q:'応仁の乱が続いた年数はおよそ？',opts:['1年','5年','11年','50年'],ans:2,exp:'応仁の乱は1467年から1477年まで約11年続きました。'}
+       ]}
+    ,
+{
+          id:4,title:"御成敗式目って最初の武士の法律？",subtitle:"——「慣習」を文字にして法律にした。",keyword:"御成敗式目",
+          scene:"📍 1232年・鎌倉　御家人の集会",
+          char1:{icon:"📜",name:"北条泰時",line:"武士の慣習を\n文章にまとめたぞ。\n御成敗式目51条じゃ。\nこれで公平に裁ける。"},
+          char2:{icon:"🧒",name:"現代の子",line:"慣習を文字にして\n法律にする。\nそれって\n「明文化」じゃん！"},
+          eraLabel:"御成敗式目",eraIcon:"📜",
+          eraPoints:["1232年、北条泰時が制定した武士の法律", "全51条で武士の権利・義務・裁判基準を明文化", "朝廷の公家法とは別の「武家独自のルール」", "武士同士の土地争いを公平に解決するため", "後の武家法（建武式目・武家諸法度）の手本に"],
+          nowLabel:"現代の「明文化・規程化」",nowIcon:"📋",
+          nowPoints:["会社のルールを「就業規則」として文書化する", "口約束→書面契約への移行", "「暗黙の了解」を明文化してトラブルを防ぐ", "憲法・法律は「社会のルールの明文化」", "ルールが文字になることで平等・公平が実現する"],
+          modernReaction:"慣習を文字にして法律にするって「就業規則を作る」のと同じだ。明文化することで公平になる！",
+          eraReply:"言葉にしなければ\nルールは人によって\n変わってしまう。\n文字にして\n初めて法律になる。",
+          quiz:[{q:"御成敗式目を制定したのは誰？",opts:["ア）源頼朝", "イ）北条泰時", "ウ）北条時宗", "エ）足利尊氏"],ans:1,exp:"1232年、鎌倉幕府の執権（実質的な最高権力者）北条泰時が御成敗式目（貞永式目）全51条を制定しました。"},{q:"御成敗式目の主な目的は？",opts:["ア）天皇の権威を強化する", "イ）武士同士の土地争いなどを公平に解決する基準を作る", "ウ）農民への課税基準を定める", "エ）外国との外交ルールを定める"],ans:1,exp:"御成敗式目は主に武士同士の土地の権利争いや相続問題を公平に裁くための基準を定めました。"},{q:"御成敗式目が「画期的」だった理由は？",opts:["ア）天皇の命令で作られたから", "イ）武士が独自の法律を持ったことが初めてだったから", "ウ）外国の法律を参考にしたから", "エ）農民の権利が初めて認められたから"],ans:1,exp:"それまでは朝廷の公家法（律令）が日本のルールでしたが、御成敗式目は武士が独自に作った法律として画期的でした。"}]
+        },
+{
+          id:5,title:"守護・地頭って地方の「支社長」？",subtitle:"——鎌倉幕府が全国に送り込んだ代理人。",keyword:"守護地頭",
+          scene:"📍 鎌倉時代・地方の荘園",
+          char1:{icon:"⚔️",name:"地頭",line:"この荘園の管理は\n我が担当じゃ。\n年貢の取り立てと\n治安維持が仕事だ。"},
+          char2:{icon:"😤",name:"荘園の領主",line:"勝手に年貢を\n多く取るな！\n地頭って\n権限が強すぎる！"},
+          eraLabel:"守護・地頭制度",eraIcon:"⚔️",
+          eraPoints:["守護：国ごとに置かれた軍事・警察担当（都道府県知事的）", "地頭：荘園・公領ごとに置かれた土地管理担当", "鎌倉幕府が全国に権力を及ぼす仕組み", "地頭が年貢を横取りするなど問題も多発", "地頭が力をつけて→室町時代の守護大名へ発展"],
+          nowLabel:"現代の本社と支社・フランチャイズ",nowIcon:"🏢",
+          nowPoints:["本社（鎌倉幕府）が全国に支社長（守護・地頭）を派遣", "フランチャイズ本部とFC加盟店の関係に似ている", "権限委譲すると「やりすぎ」が発生する問題", "現地権限が強くなると本社のコントロールが及ばなくなる", "地方分権vs中央集権のバランスは永遠の課題"],
+          modernReaction:"守護・地頭って本社が地方に派遣した支社長だ！権限を与えすぎると暴走するのも今の企業と同じ。",
+          eraReply:"遠くの土地を\n管理するには\n誰かに任せるしかない。\nでも任せすぎると\n言うことを聞かなくなる。",
+          quiz:[{q:"守護と地頭の違いとして正しいのは？",opts:["ア）守護は国全体、地頭は荘園・公領単位で置かれた", "イ）守護は武士、地頭は農民が担った", "ウ）守護は東日本、地頭は西日本に置かれた", "エ）違いはなく同じ役職"],ans:0,exp:"守護は「国（令制国）」単位で軍事・警察を担い、地頭は「荘園・公領」単位で土地管理・年貢徴収を担いました。"},{q:"地頭が問題を起こすケースとして多かったのは？",opts:["ア）外国に情報を流す", "イ）年貢を横取りしたり荘園を実質支配する", "ウ）鎌倉幕府に反乱を起こす", "エ）農民に土地を与えすぎる"],ans:1,exp:"地頭は年貢の横取り（押領）や荘園への不当介入が多く、荘園領主との争いが頻発しました。"},{q:"鎌倉幕府が守護・地頭の設置権を得たのは何という事件がきっかけ？",opts:["ア）壇ノ浦の戦い", "イ）文治の勅許（1185年）", "ウ）承久の乱", "エ）元寇"],ans:1,exp:"1185年、源頼朝は後白河法皇から「文治の勅許」を得て、全国への守護・地頭設置権を公認されました。これが鎌倉幕府の全国支配の法的根拠になりました。"}]
+        },
+{
+          id:6,title:"北条氏の執権政治って「No.2が実権を握る」？",subtitle:"——将軍は飾り、本当の権力者は別にいた。",keyword:"執権政治",
+          scene:"📍 鎌倉時代・幕府の政所",
+          char1:{icon:"👴",name:"北条義時",line:"将軍様は\n名前だけじゃ。\n実際の政務は\nすべてこちらで決める。"},
+          char2:{icon:"🧒",name:"現代の子",line:"社長は飾りで\n実権はCOOが持つ。\nそれって\n「院政」と同じ構造だ！"},
+          eraLabel:"執権政治",eraIcon:"👴",
+          eraPoints:["将軍を補佐する「執権」が実権を握る", "北条氏が代々執権職を独占（北条氏の私物化）", "承久の乱（1221年）で朝廷を抑え全国支配を確立", "得宗専制→北条氏の中でも一族のトップが独占", "源氏将軍3代で断絶→以後は京都の公家・親王を将軍に"],
+          nowLabel:"現代の「No.2が実権を握る」構造",nowIcon:"🏢",
+          nowPoints:["創業者の親族が「会長」として実権を保持", "COO（最高執行責任者）が実務を仕切る", "「院政」「執権」「摂関」——名前は違うが構造は同じ", "形式上のトップと実質的なトップが違う組織は多い", "チェック機能がないと権力は一極集中する"],
+          modernReaction:"将軍は飾りで北条氏が実権を握る。これって摂関政治や院政と全く同じ構造だ！人間って同じことを繰り返すな。",
+          eraReply:"権力者の後ろに\n本当の権力者がいる。\nそれが\nどの時代も変わらぬ\n政治の現実じゃ。",
+          quiz:[{q:"承久の乱（1221年）で対立した組み合わせは？",opts:["ア）源氏vs平氏", "イ）後鳥羽上皇（朝廷）vs北条義時（鎌倉幕府）", "ウ）北条氏vs足利氏", "エ）鎌倉幕府vs元"],ans:1,exp:"1221年、後鳥羽上皇が鎌倉幕府打倒を呼びかけて挙兵（承久の乱）。北条義時率いる幕府軍が勝利し、上皇は隠岐に流されました。"},{q:"承久の乱後の鎌倉幕府の影響力はどうなった？",opts:["ア）弱まった", "イ）朝廷との関係が回復した", "ウ）西日本にも守護・地頭を置き全国支配が確立した", "エ）将軍の権威が復活した"],ans:2,exp:"承久の乱後、幕府は西日本にも守護・地頭を広く置くことができ、全国規模の支配が確立しました。"},{q:"鎌倉幕府の初代執権は？",opts:["ア）北条時政", "イ）北条義時", "ウ）源頼家", "エ）大江広元"],ans:0,exp:"北条時政が初代執権です。源頼朝の妻・北条政子の父で、頼朝死後に実権を握りました。"}]
+        },
+{
+          id:7,title:"南北朝の動乱って国が二つに割れた？",subtitle:"——天皇が2人存在した異常な時代。",keyword:"南北朝",
+          scene:"📍 14世紀・日本列島　南北に分裂",
+          char1:{icon:"👑",name:"後醍醐天皇",line:"足利尊氏め！\n我こそが\n正統な天皇じゃ。\n吉野から戦う！"},
+          char2:{icon:"🧒",name:"現代の子",line:"天皇が2人いて\n国が分裂するって\nSNSの「鍵垢」vs「本垢」\nじゃなくて内戦じゃん！"},
+          eraLabel:"南北朝の動乱",eraIcon:"👑",
+          eraPoints:["1336〜1392年、約60年間続いた内乱", "南朝（後醍醐天皇系・吉野）vs北朝（足利系・京都）", "足利尊氏が北朝を支持して室町幕府を開く", "後醍醐天皇の「建武の新政」が短命に終わる", "1392年、南北朝が合一して動乱が終結"],
+          nowLabel:"現代の「正統性」争い",nowIcon:"🏛️",
+          nowPoints:["選挙結果を認めない「二重権力」状態", "クーデター後に「正統政府」が2つできる", "企業の「後継者争い」で会社が分裂する", "「誰が本物のリーダーか」という正統性の問題", "どちらが「本物か」を決めるのは最終的に力"],
+          modernReaction:"天皇が2人いて60年も内乱が続いたのか。国の「正統性」を巡る争いは今も世界中で起きてる。",
+          eraReply:"「正統性」とは\n結局のところ\n誰が認めるかで\n決まるのじゃ。",
+          quiz:[{q:"南北朝時代の「南朝」の拠点はどこ？",opts:["ア）鎌倉", "イ）吉野（奈良県）", "ウ）京都", "エ）室町"],ans:1,exp:"後醍醐天皇は足利尊氏に京都を追われ、吉野（奈良県）に逃れて南朝を開きました。"},{q:"後醍醐天皇が行った「建武の新政」の問題点は？",opts:["ア）外国に支配権を与えた", "イ）貴族優遇で武士の不満が爆発した", "ウ）税を廃止して財政が破綻した", "エ）仏教を禁止した"],ans:1,exp:"建武の新政は公家（貴族）中心の政治に戻そうとしたため、武士たちの不満が高まり、足利尊氏が反旗を翻すことになりました。"},{q:"南北朝の動乱が終わったのはいつ？",opts:["ア）1336年", "イ）1350年", "ウ）1392年", "エ）1467年"],ans:2,exp:"1392年、足利義満の調停により南北朝が合一し、約60年に渡る動乱が終わりました。"}]
+        },
+{
+          id:8,title:"足利義満って室町幕府最強の将軍？",subtitle:"——天皇にも皇帝にもなれた男。",keyword:"足利義満",
+          scene:"📍 14〜15世紀・京都・金閣寺",
+          char1:{icon:"🏯",name:"足利義満",line:"南北朝を統一し\n明（中国）とも国交を結んだ。\n日明貿易で\n巨富を得るぞ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"政治も外交も\n経済も全部押さえて\n最高権力者になった。\nスティーブ・ジョブズ的存在だ！"},
+          eraLabel:"足利義満の政治",eraIcon:"🏯",
+          eraPoints:["室町幕府3代将軍・1358〜1408年", "南北朝の統一（1392年）を成し遂げた", "明（中国）と「日本国王」として国交を結ぶ", "日明貿易（勘合貿易）で莫大な富を得る", "金閣寺を建立・北山文化を花開かせた"],
+          nowLabel:"現代のカリスマ経営者",nowIcon:"💼",
+          nowPoints:["政治・経済・文化を一人で牽引するカリスマ", "スティーブ・ジョブズ（Apple）のような存在", "「時代を動かした人物」の条件は今も昔も同じ", "政治力＋経済力＋文化力がそろった時代が黄金期", "後継者問題で組織が揺らぐのも同じ"],
+          modernReaction:"政治も経済も文化も全部押さえた義満。これってAppleのジョブズみたいなカリスマだ！",
+          eraReply:"強い国を作るには\n内の統一と\n外の承認が\n必要じゃ。\nどちらも欠かせない。",
+          quiz:[{q:"足利義満が明（中国）と貿易を行う際に使った証明書は？",opts:["ア）朱印状", "イ）勘合（かんごう）", "ウ）書き付け", "エ）印章"],ans:1,exp:"日明貿易では「勘合」という証明書を使って正式な貿易船と偽物の船（倭寇）を区別しました。そのため「勘合貿易」とも呼ばれます。"},{q:"足利義満が建てた有名な建物は？",opts:["ア）銀閣寺", "イ）金閣寺", "ウ）法隆寺", "エ）東大寺"],ans:1,exp:"足利義満は京都の北山に金閣寺（鹿苑寺金閣）を建立しました。義満の文化（北山文化）を象徴する建物です。"},{q:"足利義満が「日本国王」として明と国交を結んだことへの批判は？",opts:["ア）貿易赤字になったから", "イ）天皇を差し置いて中国皇帝に臣下として仕えることになるから", "ウ）明との戦争になったから", "エ）税収が減ったから"],ans:1,exp:"「日本国王」として明の皇帝に臣従する形をとったため、天皇家や武士の一部から「将軍が外国に頭を下げた」と批判されました。"}]
+        },
+{
+          id:9,title:"一揆って農民のストライキ？",subtitle:"——搾取に限界が来た民衆の反乱。",keyword:"一揆",
+          scene:"📍 室町時代・村の集会",
+          char1:{icon:"🌾",name:"農民のリーダー",line:"年貢が重すぎる！\n皆で一致団結して\n守護大名に\n訴えるのじゃ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"一致団結して\n権力に抗議する。\nそれって\nストライキや\nデモと同じだ！"},
+          eraLabel:"室町時代の一揆",eraIcon:"🌾",
+          eraPoints:["土一揆：農民・土民が団結して借金帳消しなどを要求", "国一揆：国人（地方武士）が守護大名に対抗", "一向一揆：浄土真宗信者が武装蜂起（加賀では100年支配）", "正長の土一揆（1428年）が最初の大規模土一揆", "「徳政令」（借金帳消し）を要求することが多かった"],
+          nowLabel:"現代のストライキ・デモ",nowIcon:"✊",
+          nowPoints:["労働者がストライキで賃上げを要求", "市民がデモで政策変更を求める", "フランス革命も「限界を超えた民衆の反乱」", "法的に保護されたストと違法な暴動の境界線", "「声を上げる手段」が文明の発展度を示す"],
+          modernReaction:"一揆って農民のストライキじゃん！団結して権力に要求を突きつけるのは今も昔も同じだ。",
+          eraReply:"限界まで搾り取られた者は\n必ず反乱を起こす。\n支配者は\nそれを忘れてはならない。",
+          quiz:[{q:"「徳政令」とは何を要求するものか？",opts:["ア）年貢の引き下げ", "イ）借金の帳消し（徳政）", "ウ）武士の廃止", "エ）新しい土地の開墾許可"],ans:1,exp:"徳政令は借金を帳消しにする法令です。一揆の農民たちが借金帳消しを求めて蜂起し、幕府に徳政令を出させることを目標としました。"},{q:"加賀（石川県）で約100年間、信者が自治を行った一揆は？",opts:["ア）土一揆", "イ）国一揆", "ウ）一向一揆", "エ）山城国一揆"],ans:2,exp:"浄土真宗（一向宗）の信者が加賀国で守護大名を追い出し、約100年間（1488〜1580年）「百姓の持ちたる国」と呼ばれる自治を実現しました。"},{q:"正長の土一揆（1428年）が起きた最大の原因は？",opts:["ア）戦争による食料不足", "イ）徳政令を求める農民・土倉（金貸し）への不満の爆発", "ウ）外国からの侵略", "エ）天皇の政策への反対"],ans:1,exp:"正長元年（1428年）の大規模土一揆は、飢饉と重税・借金苦に苦しむ農民・馬借たちが徳政令（借金帳消し）を求めて蜂起しました。"}]
+        },
+{
+          id:10,title:"勘合貿易って国家公認のビジネス？",subtitle:"——密貿易を防ぐ「認証システム」だった。",keyword:"勘合貿易",
+          scene:"📍 15世紀・博多港　明の船が入港",
+          char1:{icon:"⚓",name:"貿易商人",line:"この勘合符を\n明の役人に見せれば\n正式な貿易船と\n認められる。"},
+          char2:{icon:"🧒",name:"現代の子",line:"それって\nパスポートや\n輸入ライセンスみたいな\nもの？"},
+          eraLabel:"勘合貿易",eraIcon:"⚓",
+          eraPoints:["足利義満が明（中国）と始めた公式貿易（1404年〜）", "「勘合」という証明書で正規船と倭寇（海賊）を区別", "日本から銅・硫黄・刀剣を輸出", "明から銅銭・生糸・陶磁器を輸入", "室町幕府の重要な財源となった"],
+          nowLabel:"現代の輸出入ライセンス・認証",nowIcon:"🛃",
+          nowPoints:["輸入品には関税・検疫・認証が必要", "食品や医薬品は国の承認がなければ販売不可", "「認証システム」が正規品と偽物を区別する", "WTO・EPA・FTAは現代の「勘合制度」的仕組み", "国際貿易は今も「ルールと認証」で動いている"],
+          modernReaction:"勘合って輸入ライセンス・パスポートと同じ仕組みだ。貿易の「認証システム」は600年前から変わらない！",
+          eraReply:"認証がなければ\n誰が正規の商人か\nわからない。\nルールこそが\n貿易を守るのじゃ。",
+          quiz:[{q:"勘合貿易で使われた「勘合」の目的は？",opts:["ア）税金の領収書", "イ）正規の貿易船と倭寇（海賊）を区別する証明書", "ウ）商品の品質を保証する証明書", "エ）航海の許可証"],ans:1,exp:"勘合は正規の貿易船であることを証明する文書です。半分を明に、半分を幕府が持ち、合わせることで本物と確認しました。"},{q:"勘合貿易で日本が明から輸入したものは？",opts:["ア）銅・硫黄・刀剣", "イ）銅銭・生糸・陶磁器", "ウ）米・塩・鉄", "エ）金・銀・絹"],ans:1,exp:"日本は銅銭（永楽通宝）・生糸・陶磁器などを明から輸入しました。特に銅銭は国内の貨幣経済発展に大きく貢献しました。"},{q:"勘合貿易が廃止された理由は？",opts:["ア）明が滅亡したから", "イ）博多商人（大内氏）と堺商人（細川氏）の利権争いで混乱したから", "ウ）戦国大名が禁止したから", "エ）倭寇が根絶されたから"],ans:1,exp:"16世紀、勘合貿易の利権を巡る大内氏と細川氏の争いで混乱が生じ（寧波の乱）、貿易は事実上停止しました。"}]
+        }
+]
+  },
+  {
+    id:'sengoku',cls:'sengoku',icon:'🔥',name:'戦国時代',period:'1500〜1600年ごろ',
+    sub:'天下統一・楽市楽座・鉄砲伝来',
+    bgVar:'--era-sengoku-bg',accentVar:'--era-sengoku-accent',textVar:'--era-sengoku-text',badge:'戦国',
+    aiTopics:['鉄砲伝来','楽市楽座','天下統一','関ヶ原の戦い','兵農分離','キリスト教伝来','城と建築','忍者','海外との貿易','戦国大名の経営'],
+    episodes:[
+      {id:1,title:'鉄砲伝来って革命的なアップデート？',subtitle:'——一挙に「戦い方」が変わった瞬間。',keyword:'鉄砲伝来',
+       scene:'📍 1543年・種子島　ポルトガル船が漂着',
+       char1:{icon:'🧑‍✈️',name:'ポルトガル人',line:'これが火縄銃じゃ。\n引き金を引けば\n遠くの敵を倒せる。\n買わぬか？'},
+       char2:{icon:'😲',name:'島津の家臣',line:'なんという武器じゃ！\n弓矢も槍も\n時代遅れになるぞ…\nこれで天下が変わる！'},
+       eraLabel:'🔫 鉄砲伝来',eraIcon:'🔫',
+       eraPoints:['1543年、ポルトガル人が種子島に鉄砲を伝来','10年で国内生産が始まり全国に普及','長篠の戦いで織田信長が3000丁を活用し武田騎馬隊を壊滅','「個人の武勇」より「組織的な集団戦」が重要に','城の構造も変わり、石垣・天守閣の城郭建築が発展'],
+       nowLabel:'🤖 現代のゲームチェンジャー技術',nowIcon:'🤖',
+       nowPoints:['AIが仕事のやり方を根本から変える','ドローン・無人兵器が軍事の常識を変えた','スマホ普及でビジネス・生活が激変','「新技術を最初に使った側が圧倒的有利」は今も同じ','いち早く採用した組織が生き残る'],
+       modernReaction:'鉄砲って今でいう\nAIやドローンじゃん！\nいち早く使った信長が\n圧倒的有利になったのは\n当然だ。',
+       eraReply:'新しい道具を\nいち早く使いこなした者が\n天下を取る。\nそれが乱世の鉄則じゃ。',
+       quiz:[
+         {q:'鉄砲が日本に伝わったのはいつ、どこから？',opts:['1543年、ポルトガル人が種子島に持ち込んだ','1600年、オランダが長崎に伝えた','1492年、中国から伝わった','1600年、イギリス人が伝えた'],ans:0,exp:'1543年、ポルトガル人を乗せた船が種子島（鹿児島）に漂着し、日本に鉄砲を伝えました。'},
+         {q:'鉄砲を大量に使った長篠の戦いで勝利したのは？',opts:['武田信玄','織田信長','豊臣秀吉','徳川家康'],ans:1,exp:'1575年の長篠の戦いで、織田信長は鉄砲3000丁を活用した戦法で武田軍の騎馬隊を破りました。'},
+         {q:'鉄砲の普及が日本社会に与えた変化は？',opts:['武士の個人的な武勇が重要になった','組織的な足軽の歩兵戦が重要になった','戦争がなくなった','農民が武士になれなくなった'],ans:1,exp:'鉄砲の登場で個人の武勇より組織的な戦略が重要になり、大量の足軽を訓練した大名が強くなりました。'}
+       ]},
+      {id:2,title:'楽市楽座って規制撤廃令？',subtitle:'——「自由に商売していいよ」が革命だった。',keyword:'楽市楽座',
+       scene:'📍 安土城下・市場の開設日',
+       char1:{icon:'🏪',name:'新参の商人',line:'え！誰でも商売\nしていいの？\n組合に入らなくて\nいいの？！'},
+       char2:{icon:'👒',name:'既存の商人組合',line:'うちらの独占が\nなくなった…\nでも競争で\n客が増えたな。'},
+       eraLabel:'🏪 楽市楽座',eraIcon:'🏪',
+       eraPoints:['織田信長が安土城下などで実施（1577年ごろ）','「座」（同業者組合の独占）を廃止し自由競争を導入','誰でも市場で商売できるようになった','関所を廃止し物流も自由化','城下町に商人が集まり経済が活発化→軍事力アップ'],
+       nowLabel:'📈 現代の規制緩和',nowIcon:'📈',
+       nowPoints:['「市場の自由化」「規制緩和」は現代の政策でも頻出','独占禁止法で特定企業の独占を規制','タクシー配車アプリも既存業界の「座」を崩した','ライドシェア・民泊も「楽市楽座」的な規制緩和','自由競争で消費者が得をする→経済全体が活性化'],
+       modernReaction:'楽市楽座って\n今でいう「規制緩和」じゃん！\nライドシェアやUber Eatsが\n既存タクシーの「座」を壊したのと同じだ！',
+       eraReply:'独占を守れば\n少数が得をし、\n多数が損をする。\n市場を開けば皆が栄える。',
+       quiz:[
+         {q:'楽市楽座を実施した主な人物は？',opts:['豊臣秀吉','徳川家康','織田信長','今川義元'],ans:2,exp:'織田信長が安土城下などで楽市楽座を実施し、商業を活発にして城下町を発展させました。'},
+         {q:'「楽座」の「座」とは何？',opts:['座って商売する場所','独占的な商業組合','座禅を組む場所','裁判所'],ans:1,exp:'「座」は特定の商品を独占販売できる同業者組合。楽座はこの独占を廃止し、誰でも自由に商売できるようにしました。'},
+         {q:'楽市楽座の目的として最も正しいのは？',opts:['農業を発展させるため','城下町の商業を活発にして経済力・軍事力を高めるため','庶民の生活を豊かにするためだけ','税収を増やすためだけ'],ans:1,exp:'信長の目的は城下町を栄えさせ、商人や職人を集めて経済・軍事の力を高めることでした。'}
+       ]},
+      {id:3,title:'天下統一って日本初のM&A？',subtitle:'——信長・秀吉・家康の3社合併プロジェクト。',keyword:'天下統一',
+       scene:'📍 関ヶ原・1600年　最後の決戦',
+       char1:{icon:'🏇',name:'徳川家康',line:'信長・秀吉の\n事業を引き継いで\n最後の統一じゃ。\n全国を一つにする！'},
+       char2:{icon:'🧒',name:'現代の子',line:'信長が土台を作って\n秀吉が整えて\n家康が完成させた。\n3人がかりのM&Aだ！'},
+       eraLabel:'🗾 天下統一',eraIcon:'🗾',
+       eraPoints:['信長：鉄砲・楽市楽座で経済・軍事改革、本能寺で倒れる','秀吉：刀狩・兵農分離・朝鮮出兵で統一するも晩年に失敗','家康：関ヶ原の勝利で260年続く江戸幕府を開く','3人がバトンを繋いで「統一」というプロジェクトが完成','「鳴かぬなら…」の川柳に3人の個性が凝縮'],
+       nowLabel:'🏢 現代の企業合併（M&A）',nowIcon:'🏢',
+       nowPoints:['大企業が中小企業を買収・合併して巨大化','ビジョンを持つ創業者→実務を固める2代目→完成させる3代目','Appleも創業者ジョブズ→クック体制へ','一人では成し遂げられない規模を組織で実現','「統一後の安定維持」が最も難しい課題'],
+       modernReaction:'3人がかりで100年かけて\n天下統一か。\n大企業のM&Aも\n同じように何年もかかるんだろうな。',
+       eraReply:'一人の天才より\n三人の賢者。\n時代を越えて\n引き継ぐことで\n大業は成る。',
+       quiz:[
+         {q:'「天下統一」を最も推進したが志半ばで倒れた人物は？',opts:['徳川家康','豊臣秀吉','織田信長','武田信玄'],ans:2,exp:'織田信長は天下統一に最も近づきましたが、1582年の本能寺の変で家臣・明智光秀に討たれました。'},
+         {q:'豊臣秀吉が農民・武士の身分を固定した政策は？',opts:['楽市楽座','刀狩・兵農分離','参勤交代','太閤検地'],ans:1,exp:'秀吉は刀狩と兵農分離を行い、身分制度の基礎を作りました。'},
+         {q:'関ヶ原の戦い（1600年）に勝ち江戸幕府を開いたのは？',opts:['豊臣秀頼','石田三成','徳川家康','前田利家'],ans:2,exp:'1600年の関ヶ原の戦いで徳川家康が勝利。1603年に江戸幕府を開き、260年以上続く徳川の時代が始まりました。'}
+       ]}
+    ,
+{
+          id:4,title:"桶狭間の戦いって番狂わせの逆転勝利？",subtitle:"——少数が多数に勝った戦略の奇跡。",keyword:"桶狭間の戦い",
+          scene:"📍 1560年・尾張・桶狭間の谷",
+          char1:{icon:"⚡",name:"織田信長",line:"今川の大軍が来るぞ。\n数では勝てない。\nだが奇襲で\n本陣を突けば勝てる！"},
+          char2:{icon:"🧒",name:"現代の子",line:"大企業のシェアに\nスタートアップが\n奇策で勝つ。\nそれって\nDisruptionじゃん！"},
+          eraLabel:"桶狭間の戦い",eraIcon:"⚡",
+          eraPoints:["1560年、今川義元2万5千vs織田信長2千の戦い", "信長が嵐に乗じて本陣に奇襲攻撃", "義元の首を取り圧倒的兵力差を覆した", "「天下布武」への道を開いた信長最初の大勝利", "「下剋上」の象徴的な戦い"],
+          nowLabel:"現代のスタートアップ vs 大企業",nowIcon:"🚀",
+          nowPoints:["資金力・規模で劣るスタートアップが革新的製品で勝つ", "AppleがIBMに挑戦した1984年のように", "正面から戦わず「ニッチ戦略」で勝負する", "イノベーションは往々にして小さな側から生まれる", "「弱者の兵法」が現代ビジネスの定石"],
+          modernReaction:"圧倒的な不利を奇策で覆すのってスタートアップが大企業に勝つDisruptionそのものだ！",
+          eraReply:"勝てない戦を\n正面から挑むな。\n相手の弱点を\n突くのが\n智将の道じゃ。",
+          quiz:[{q:"桶狭間の戦いで今川義元を討った武将は？",opts:["ア）豊臣秀吉", "イ）徳川家康", "ウ）織田信長", "エ）明智光秀"],ans:2,exp:"1560年、織田信長が今川義元の大軍を桶狭間で奇襲し、義元を討ち取りました。この勝利が信長の天下統一への転機となりました。"},{q:"桶狭間の戦いで信長が奇襲に成功した要因は？",opts:["ア）敵が眠っていた", "イ）激しい嵐（豪雨）の最中に奇襲した", "ウ）裏切り者がいた", "エ）鉄砲を使った"],ans:1,exp:"桶狭間の戦いでは激しい嵐が信長を助けました。嵐の中、今川軍が休憩している本陣に奇襲をかけ義元を討ちとりました。"},{q:"桶狭間の戦い当時の兵力の差はおよそ？",opts:["ア）互角（同数）", "イ）信長が5倍多かった", "ウ）今川が約10倍以上多かった", "エ）今川が2倍多かった"],ans:2,exp:"今川義元の軍勢は約2万5千、対する織田信長は約2千程度で、兵力差は約10倍以上という圧倒的な不利の中での勝利でした。"}]
+        },
+{
+          id:5,title:"本能寺の変って最大のどんでん返し？",subtitle:"——天下人が家臣に討たれた衝撃の事件。",keyword:"本能寺の変",
+          scene:"📍 1582年6月2日・京都・本能寺",
+          char1:{icon:"🔥",name:"明智光秀",line:"敵は本能寺にあり！\n信長様を\n討つのじゃ！\n天下はわれに……"},
+          char2:{icon:"🧒",name:"現代の子",line:"最強の上司を\n部下が暗殺した。\nこれって\n社内クーデターの\n極致じゃん！"},
+          eraLabel:"本能寺の変",eraIcon:"🔥",
+          eraPoints:["1582年6月2日、信長が家臣・明智光秀に討たれる", "信長は京都・本能寺に少数の護衛で滞在中だった", "光秀の動機は未だ謎（様々な説がある）", "直後に豊臣秀吉が光秀を「山崎の戦い」で討つ", "「三日天下」——光秀の支配は11日で終わる"],
+          nowLabel:"現代の社内クーデター・裏切り",nowIcon:"🗡️",
+          nowPoints:["創業者が信頼していた幹部に裏切られる", "「No.2が社長を追い落とす」事件は現代企業でも", "裏切りの動機：不満・野心・恐怖・正義感", "権力者の周囲にいる人間が最も危険", "「誰を信頼するか」は権力者の最大の課題"],
+          modernReaction:"最も信頼していた部下に裏切られるのは今の経営者でも起きる最悪のシナリオだ。動機が謎なのも同じ！",
+          eraReply:"人の心は\n読めぬもの。\n権力を持てば\n持つほど\n孤独になる。",
+          quiz:[{q:"本能寺の変が起きたのはいつ？",opts:["ア）1560年", "イ）1575年", "ウ）1582年", "エ）1600年"],ans:2,exp:"1582年6月2日（天正10年）、明智光秀が京都の本能寺で織田信長を襲撃しました。"},{q:"本能寺の変後、明智光秀を討ったのは？",opts:["ア）徳川家康", "イ）豊臣秀吉", "ウ）柴田勝家", "エ）上杉景勝"],ans:1,exp:"中国地方から素早く引き返した羽柴（豊臣）秀吉が、山崎の戦いで明智光秀を破りました。この素早い行動が後の秀吉の天下への道を開きました。"},{q:"「光秀が信長を討った動機」について現在わかっていることは？",opts:["ア）信長に侮辱されたためという説が確定している", "イ）様々な説（怨恨・野望・朝廷の命令など）があり確定していない", "ウ）徳川家康に命令されたためとわかっている", "エ）光秀自身が日記に動機を書き残している"],ans:1,exp:"本能寺の変の動機は「四国説」「怨恨説」「野望説」「朝廷黒幕説」など多くの説があり、現在も歴史学者の間で議論が続いています。"}]
+        },
+{
+          id:6,title:"豊臣秀吉って「成り上がり」の極致？",subtitle:"——農民の子が天下人になった。",keyword:"豊臣秀吉",
+          scene:"📍 16世紀・尾張　百姓の家",
+          char1:{icon:"🌟",name:"若き秀吉",line:"百姓の子でも\n才覚があれば\n出世できる！\n天下を取ってみせる！"},
+          char2:{icon:"🧒",name:"現代の子",line:"学歴も家柄もなく\n実力だけで\n頂点を極める。\n現代の「自己啓発の神話」だ！"},
+          eraLabel:"豊臣秀吉の出世",eraIcon:"🌟",
+          eraPoints:["尾張の農民の子として生まれた", "織田信長に仕えて草履取りから出世", "本能寺の変後、天下統一を果たした", "検地・刀狩・兵農分離で近代的な社会の基礎を作る", "朝鮮出兵（文禄・慶長の役）は失敗に終わる"],
+          nowLabel:"現代の「自力成功物語」",nowIcon:"🏆",
+          nowPoints:["無名の起業家が大企業を作る（Appleのジョブズ）", "学歴・家柄関係なく実力で成功する「実力主義」", "「下剋上」「成り上がり」は現代のサクセスストーリー", "才能と機会が合致した時に歴史が変わる", "成功後の「傲慢さ」が失敗を呼ぶのも共通"],
+          modernReaction:"農民の子が天下人になる。これって現代の「成功者インタビュー」に出てくる話と全く同じ構造だ！",
+          eraReply:"生まれは関係ない。\n機会をつかんで\n離さなければ\n誰でも上に行ける。\nただし、傲慢になれば終わりじゃ。",
+          quiz:[{q:"豊臣秀吉の出身はどのような家柄？",opts:["ア）武士の家", "イ）農民（百姓）の家", "ウ）商人の家", "エ）僧侶の家"],ans:1,exp:"豊臣秀吉は尾張国（現在の愛知県西部）の農民の家に生まれました。身分の低い出自から天下人になったことで「下剋上の象徴」とされます。"},{q:"秀吉の「刀狩」の目的は？",opts:["ア）武士の刀を没収するため", "イ）農民から武器を没収して農業に専念させ、反乱を防ぐため", "ウ）刀の品質管理のため", "エ）外国への刀剣輸出のため"],ans:1,exp:"刀狩（1588年）は農民から刀・弓・槍などの武器を没収し、農民と武士の身分を固定（兵農分離）する政策でした。"},{q:"秀吉が全国の土地を測量して石高（米の生産量）を確定した政策は？",opts:["ア）楽市楽座", "イ）太閤検地", "ウ）刀狩", "エ）朱印状"],ans:1,exp:"太閤検地（1582〜98年）で全国の田畑を統一基準で測量し、石高（米の生産量）を確定しました。これが近世の土地制度の基礎となりました。"}]
+        },
+{
+          id:7,title:"関ヶ原の戦いって日本史最大の決戦？",subtitle:"——6時間で天下の行方が決まった。",keyword:"関ヶ原の戦い",
+          scene:"📍 1600年9月15日・岐阜県関ヶ原",
+          char1:{icon:"⚔️",name:"徳川家康",line:"西軍の小早川を\n寝返らせる手筈は\n整った。\n勝負は一瞬じゃ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"事前の根回しと\n裏切りで\n勝負が決まる。\nM&Aの買収合戦みたいだ！"},
+          eraLabel:"関ヶ原の戦い",eraIcon:"⚔️",
+          eraPoints:["1600年、徳川家康（東軍）vs石田三成（西軍）", "総勢約16万人が激突した天下分け目の戦い", "小早川秀秋の裏切りが勝敗を決した", "わずか6時間で東軍が勝利", "家康が1603年に江戸幕府を開く→260年の徳川支配へ"],
+          nowLabel:"現代の企業買収・覇権争い",nowIcon:"🏢",
+          nowPoints:["M&A（企業買収）での「陣取り合戦」", "キーマンを引き込む交渉が勝敗を左右する", "「裏切り」＝競合からの引き抜き・鞍替え", "事前の工作（根回し）が本番より重要", "勝者が「新しいルール（幕府）」を作る"],
+          modernReaction:"小早川の裏切りで決まったのか。企業買収でも「キーマンを引き込めるか」で勝負が決まるのと同じだ！",
+          eraReply:"戦は始まる前に\nすでに決まっておる。\n勝つための\n準備が\n本当の戦略じゃ。",
+          quiz:[{q:"関ヶ原の戦いで「東軍」を率いた武将は？",opts:["ア）石田三成", "イ）豊臣秀頼", "ウ）徳川家康", "エ）上杉景勝"],ans:2,exp:"東軍（徳川方）の総大将は徳川家康。西軍（豊臣方）の中心は石田三成でした。"},{q:"西軍が敗れた決定的な原因は？",opts:["ア）兵力が少なかったから", "イ）小早川秀秋が東軍に寝返ったから", "ウ）武器が不足していたから", "エ）食料が尽きたから"],ans:1,exp:"西軍に属していた小早川秀秋（約1万5千の兵）が戦いの途中で東軍に寝返り、西軍の大谷吉継隊を攻撃したことで形勢が一気に逆転しました。"},{q:"関ヶ原の戦いが行われた年は？",opts:["ア）1582年", "イ）1590年", "ウ）1600年", "エ）1615年"],ans:2,exp:"慶長5年（1600年）9月15日に関ヶ原の戦いが起きました。この戦いから3年後の1603年に徳川家康が江戸幕府を開きます。"}]
+        },
+{
+          id:8,title:"朝鮮出兵って無謀な海外進出？",subtitle:"——秀吉の野望が失敗に終わった理由。",keyword:"朝鮮出兵",
+          scene:"📍 1592年・朝鮮半島　秀吉軍が上陸",
+          char1:{icon:"⛵",name:"豊臣秀吉",line:"朝鮮・明を征服して\n大帝国を作るのじゃ！\n大陸に攻め込め！"},
+          char2:{icon:"🧒",name:"現代の子",line:"国内統一したばかりで\n海外進出を強行。\nそれって\n実力を過信した\n無謀な海外M&Aだ！"},
+          eraLabel:"朝鮮出兵（文禄・慶長の役）",eraIcon:"⛵",
+          eraPoints:["1592年（文禄の役）・1597年（慶長の役）の2度にわたる", "朝鮮・明（中国）征服を目指して約15万の軍を派遣", "李舜臣の亀甲船による海戦で補給路を断たれる", "朝鮮民衆の抵抗・明の援軍で泥沼化", "1598年秀吉の死により撤退→完全な失敗に終わる"],
+          nowLabel:"現代の失敗した海外進出",nowIcon:"🌏",
+          nowPoints:["国内で成功した企業が海外で失敗するケース", "現地の文化・抵抗を軽視した進出", "過大な資金・人材投入で本業に支障", "「撤退の判断」ができず傷口が広がる", "「国内の論理が海外では通用しない」の教訓"],
+          modernReaction:"国内で天下を取っても海外では通用しなかった。国内の勝者が海外で失敗するのは今の企業も同じだ！",
+          eraReply:"自国で通じる\nやり方が\n外では通じない。\nその傲慢さが\n大きな失敗を招く。",
+          quiz:[{q:"朝鮮出兵（文禄の役）が起きた年は？",opts:["ア）1582年", "イ）1592年", "ウ）1600年", "エ）1615年"],ans:1,exp:"1592年（文禄元年）に第1次朝鮮出兵（文禄の役）が始まりました。1597年には第2次（慶長の役）が行われました。"},{q:"朝鮮出兵で日本軍の補給路を断った朝鮮の将軍は？",opts:["ア）李成桂", "イ）李舜臣", "ウ）世宗", "エ）高麗王"],ans:1,exp:"李舜臣は亀甲船（装甲軍船）を駆使した水軍で日本軍の補給路を断ちました。朝鮮の英雄として現在も高く評価されています。"},{q:"朝鮮出兵が失敗に終わった最大の原因は？",opts:["ア）日本軍の兵力が足りなかった", "イ）朝鮮民衆の抵抗・明の援軍・補給路の遮断などが重なったため", "ウ）秀吉が途中で撤退を命じたため", "エ）病気が流行したため"],ans:1,exp:"朝鮮民衆のゲリラ戦（義兵）、李舜臣率いる水軍による補給路遮断、明の援軍参戦など多くの要因が重なり、日本軍は苦戦を強いられました。"}]
+        },
+{
+          id:9,title:"兵農分離って「社会の固定化」？",subtitle:"——武士と農民を永遠に分けたシステム。",keyword:"兵農分離",
+          scene:"📍 16世紀末・農村　刀狩の日",
+          char1:{icon:"⚔️",name:"豊臣の役人",line:"農民は農業だけをせよ。\n武器は全部没収じゃ。\nこれからは\n武士と農民は別じゃ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"職業を生まれで\n固定するシステムを\n作ったんだ。\n士農工商の\n原型じゃん！"},
+          eraLabel:"兵農分離",eraIcon:"⚔️",
+          eraPoints:["秀吉が刀狩（1588年）・検地で実施", "農民が武士になれない社会を制度化", "武士は城下町に集住→農村には農民だけ", "戦国時代の「下剋上」が不可能になる", "江戸時代の士農工商身分制度の直接の源流"],
+          nowLabel:"現代の「職業・役割の固定化」",nowIcon:"📋",
+          nowPoints:["「正社員」と「非正規」の待遇格差の固定化", "専門職・資格制度が参入を制限する", "「生まれた国」で人生が決まる国際的格差", "社会の安定のために流動性を下げると格差が生まれる", "「機会の平等」vs「社会の安定」は永遠のトレードオフ"],
+          modernReaction:"兵農分離が士農工商の原型か。「身分の固定化」は現代の正規・非正規格差と同じ構造だ！",
+          eraReply:"社会が安定するには\nそれぞれの役割が\n固定されている方が\n都合がいい。\nただし、固めすぎると\n歪みが生まれる。",
+          quiz:[{q:"兵農分離を進めるために豊臣秀吉が行った政策は？",opts:["ア）楽市楽座と参勤交代", "イ）刀狩と太閤検地", "ウ）享保の改革と寛政の改革", "エ）廃刀令と地租改正"],ans:1,exp:"秀吉は1588年の刀狩（農民から武器没収）と太閤検地（土地測量・石高確定）によって兵農分離を推進しました。"},{q:"兵農分離の結果として起きたことは？",opts:["ア）農民が武士になりやすくなった", "イ）武士と農民の身分差が固定化された", "ウ）武士が農業をするようになった", "エ）全員が平等な社会になった"],ans:1,exp:"兵農分離により武士と農民の身分差が固定化され、戦国時代のような「農民が武士になる」下剋上が起こりにくくなりました。"},{q:"兵農分離が江戸時代に与えた影響は？",opts:["ア）武士が農業で生活できるようになった", "イ）士農工商の身分制度の基礎となった", "ウ）農民の生活水準が大幅に向上した", "エ）商人が最上位身分になった"],ans:1,exp:"秀吉の兵農分離政策は江戸時代の士農工商（武士・農民・職人・商人）という身分制度の直接の基礎になりました。"}]
+        },
+{
+          id:10,title:"城づくりの変化って「時代の変化」を映す鏡？",subtitle:"——山城から平城へ。変わる戦いの形。",keyword:"城郭建築",
+          scene:"📍 16世紀・安土城　天守閣を見上げる",
+          char1:{icon:"🏯",name:"織田信長",line:"この安土城を見よ！\n高い天守閣は\n権力の象徴じゃ。\n誰もが我を仰ぎ見る！"},
+          char2:{icon:"🧒",name:"現代の子",line:"高層ビルを建てて\n企業の力を示す。\n東京スカイツリーや\n六本木ヒルズと\n同じ発想だ！"},
+          eraLabel:"戦国時代の城郭建築",eraIcon:"🏯",
+          eraPoints:["室町以前：山城（防御重視・険しい山の上）", "戦国〜安土桃山：平山城・平城（支配の象徴へ）", "安土城（信長）が初の本格的な天守閣をもつ城", "天守閣は権威の象徴として巨大化", "城下町の整備→経済の中心地に"],
+          nowLabel:"現代の高層ビル・シンボル建築",nowIcon:"🏙️",
+          nowPoints:["高層ビルで企業・国家の力を示す", "東京スカイツリー・六本木ヒルズなどの「ランドマーク」", "「見せる建築」が権力と資本の象徴", "城下町の発展＝現代の都市開発", "建物のデザインが時代の価値観を映す"],
+          modernReaction:"天守閣を高くして権威を示すのって今の高層ビルや東京スカイツリーと全く同じ発想だ！",
+          eraReply:"高くそびえる建物は\n「我は強い」という\nメッセージじゃ。\n形は変わっても\n人間の見せたい心は変わらない。",
+          quiz:[{q:"日本で初めて本格的な天守閣を持つ城を建てた武将は？",opts:["ア）豊臣秀吉", "イ）徳川家康", "ウ）織田信長", "エ）武田信玄"],ans:2,exp:"織田信長が1576年に建設を始めた安土城（滋賀県）が、日本初の本格的な天守閣を持つ城とされています。"},{q:"戦国時代以前の「山城」の特徴として正しいのは？",opts:["ア）平地に建てて権威を示した", "イ）険しい山の上に建てて守りを重視した", "ウ）海の近くに建てた", "エ）地下に建てた"],ans:1,exp:"山城は険しい山の上や尾根に建てられ、防御を最重視した作りでした。敵が攻め上がるのが困難な地形を利用しました。"},{q:"城下町の役割として正しいのは？",opts:["ア）農業の中心地", "イ）城主の支配下で商人・職人が集まる経済の中心地", "ウ）宗教的な聖地", "エ）軍事訓練場"],ans:1,exp:"城下町は城主の保護のもとで商人・職人が集まり、経済・文化の中心地として発展しました。楽市楽座はその発展を促す政策でした。"}]
+        }
+]
+  },
+  {
+    id:'edo',cls:'edo',icon:'🏯',name:'江戸時代',period:'1600〜1868年',
+    sub:'参勤交代・鎖国・享保の改革',
+    bgVar:'--era-edo-bg',accentVar:'--era-edo-accent',textVar:'--era-edo-text',badge:'近世',
+    aiTopics:['火事と消防','両替と貨幣','歌舞伎・演劇','食文化・外食','大奥','武士の生活','農民の一日','江戸の医療','港と貿易','忍者'],
+    episodes:[
+      {id:1,title:'瓦版ってなんだ？',subtitle:'——それ、今で言うXじゃん。',keyword:'瓦版',
+       scene:'📍 江戸・町中　一七〇〇年代',
+       char1:{icon:'🗣️',name:'読み売り',line:'かーわーらーばーん！\n本日の大ニュース！\n浅草で大火事だよ！！'},
+       char2:{icon:'👘',name:'町人',line:'おっ！一枚くれ！\n（あとでデマとわかる）'},
+       eraLabel:'📜 江戸の瓦版',eraIcon:'📜',
+       eraPoints:['手書き・木版刷りの一枚紙ニュース','売り子（読み売り）が街を歩いて販売','火事・事件・噂話・スキャンダルが中心','事実の誇張やデマも多く含まれた','幕府が検閲・発行禁止にしようとした'],
+       nowLabel:'📱 今のX（Twitter）',nowIcon:'📱',
+       nowPoints:['スマホで誰でも瞬時に投稿・拡散','速報性があり、デマ・誤報も多い','炎上・事件・噂が注目を集める','早く投稿した人が注目を浴びる','政府・企業が削除・規制しようとする'],
+       modernReaction:'「速報」「拡散希望」「デマが多い」…\n完全にXじゃん！\n江戸時代から\nやってることが同じだ！',
+       eraReply:'うちらは声で広めてたけどな。\nまあやってることは\n同じじゃないか？',
+       quiz:[
+         {q:'瓦版が伝えていた内容として正しいものはどれ？',opts:['幕府の公式発表のみ','火事・事件・噂話などのニュース','外国の情報','商品の値段'],ans:1,exp:'瓦版は火事・事件・噂話など庶民が興味を持つニュースを伝えました。時には事実と違う情報も含まれていました。'},
+         {q:'瓦版が現代のXと似ている点はどれ？',opts:['政府が管理していた','速報性があり、デマも多かった','写真が使われていた','無料で配られた'],ans:1,exp:'速報性とデマの多さがXと似ています。幕府が検閲しようとしたことも、現代のコンテンツ規制と重なります。'},
+         {q:'瓦版を売り歩いた人を何という？',opts:['飛脚','読み売り（売り子）','岡っ引き','勘定奉行'],ans:1,exp:'瓦版は「読み売り」と呼ばれる売り子が街を歩きながら声を上げて売り歩きました。'}
+       ]},
+      {id:2,title:'参勤交代ってブラック出張？',subtitle:'——しかも交通費は自腹です。',keyword:'参勤交代',
+       scene:'📍 地方・藩の城　出発の朝',
+       char1:{icon:'👑',name:'大名',line:'また江戸に行かねばならん…\n家来500人連れて\n費用は藩持ちじゃ。'},
+       char2:{icon:'📋',name:'家老',line:'今年の参勤費用…\n藩の年間予算の\n30〜50%でございます🥲'},
+       eraLabel:'🚶 参勤交代',eraIcon:'🚶',
+       eraPoints:['1年おきに江戸↔地元を往復が義務','家来500人以上を引き連れての大移動','費用はすべて大名の自腹（藩の予算30〜50%）','妻子は江戸に人質として残す','断れば反乱とみなされ処罰'],
+       nowLabel:'💼 現代のブラック出張',nowIcon:'💼',
+       nowPoints:['毎月本社への強制出張が義務','部下も全員帯同が必須','交通費・宿泊費は自腹','家族は会社の近くに住まわせる','拒否したら即クビ・左遷'],
+       modernReaction:'それって完全にブラック企業じゃん！\nしかも断れないって…\n幕府の支配が徹底してる。',
+       eraReply:'将軍様の狙いは\nわかっておる。\n金を使わせて\n反乱できなくする作戦じゃ。',
+       quiz:[
+         {q:'参勤交代で大名が江戸と地元を往復する頻度は？',opts:['毎月','1年おき','3年おき','10年おき'],ans:1,exp:'参勤交代は原則1年おき。江戸に1年住んだら地元に戻り、また江戸へ……を繰り返しました。'},
+         {q:'幕府が参勤交代を制度化した本当の狙いはどれ？',opts:['大名が健康を保てるよう','大名の財力を消耗させ反乱を防ぐため','大名同士の交流を深めるため','江戸の経済を活発にするため'],ans:1,exp:'参勤交代の最大の狙いは大名の財力を消耗させること。お金がなければ軍隊を雇えず、反乱が起きにくくなります。'},
+         {q:'参勤交代に要した費用は藩の予算のどのくらい？',opts:['約5%','約15%','約30〜50%','約80%'],ans:2,exp:'参勤交代の費用は藩の年間予算の30〜50%に及ぶことも。これが藩の財政を大きく圧迫しました。'}
+       ]},
+      {id:3,title:'士農工商って身分ロック？',subtitle:'——生まれた瞬間に職業が決まる社会。',keyword:'士農工商',
+       scene:'📍 江戸・農家に生まれた朝',
+       char1:{icon:'👨‍🌾',name:'農民の父',line:'おまえも農民じゃ。\n一生田んぼを耕すぞ。\n武士にはなれんからな。'},
+       char2:{icon:'👦',name:'農民の子',line:'剣術を習いたい…\nでも農民には無理か…\nなんで生まれで決まるの？'},
+       eraLabel:'🔒 士農工商',eraIcon:'🔒',
+       eraPoints:['武士・農民・職人・商人の身分が固定','生まれた家で一生の職業が決まる','身分を超えた結婚は基本NG','農民は収穫の大半を年貢で取られる','武士だけが苗字と刀を持てた'],
+       nowLabel:'🎓 現代の学歴・格差社会',nowIcon:'🎓',
+       nowPoints:['生まれた家の経済力で教育格差が生まれる','「生まれた環境で人生が決まる」という問題','親の職業・収入が子の進路に影響','日本は「四民平等」だが格差は残る','「機会の平等」を実現するのが現代の課題'],
+       modernReaction:'士農工商は廃止されたけど\n生まれた家で\n人生が決まりやすい構造は\n今も続いてるって怖いな…',
+       eraReply:'生まれた時からそれが\n「普通」だから\n疑問すら持たなかった。\n常識を疑う力が大事じゃ。',
+       quiz:[
+         {q:'士農工商の「農」が2番目に置かれた理由は？',opts:['農民が一番かしこかったから','米が国の経済を支えていたから','農民が一番お金持ちだったから','農民が武士に協力していたから'],ans:1,exp:'米が経済の基盤だったため農業は重視されました。しかし実際には農民は年貢で苦しめられていました。'},
+         {q:'士農工商で武士だけが持てたものは？',opts:['苗字と刀','土地と田んぼ','店と商売の権利','寺と神社'],ans:0,exp:'武士だけが苗字（名字）と刀を持つことが許されていました。'},
+         {q:'士農工商の身分制度が廃止されたのはいつ？',opts:['江戸時代の中頃','明治維新のころ','大正時代','戦後'],ans:1,exp:'明治維新後の四民平等政策で士農工商の身分制度は廃止されました。'}
+       ]},
+      {id:4,title:'鎖国って国ごとネット遮断？',subtitle:'——外の情報は「危険」と判断された。',keyword:'鎖国',
+       scene:'📍 長崎・出島　外国船が到着',
+       char1:{icon:'🧑‍✈️',name:'オランダ商人',line:'この小さな島だけで\n貿易するしかないか…\n出島の外には\n出られないのか。'},
+       char2:{icon:'⚔️',name:'幕府役人',line:'キリスト教は禁止。\n貿易はオランダと\n中国だけ。\n逆らえば死罪！'},
+       eraLabel:'🚫 鎖国',eraIcon:'🚫',
+       eraPoints:['1639年、外国との交流をほぼ全面禁止','貿易できる国はオランダと中国（清）のみ','海外渡航した日本人は帰国禁止','キリスト教は「危険思想」として弾圧','情報は幕府がコントロール'],
+       nowLabel:'🌐 国ごとネット遮断',nowIcon:'🌐',
+       nowPoints:['YouTube・Google・SNSを全遮断','国が許可したサイトしか見れない','海外ニュースは全部フィルター済み','政府批判の情報は「危険」として削除','外国語学習も制限される'],
+       modernReaction:'SNSもYouTubeも使えない生活…\nそれで200年も続いたの？！\n知らなければ\n「遮断されてる」とも気づかない。',
+       eraReply:'外の世界を知らなければ\n不満も生まれない。\nそれが支配者の\n計算じゃ。',
+       quiz:[
+         {q:'鎖国中に貿易を許されたのはどの国？',opts:['スペインとポルトガル','オランダと中国（清）','イギリスとフランス','ロシアとアメリカ'],ans:1,exp:'鎖国中に貿易を許可されたのはオランダと中国（清）のみ。長崎の出島がその窓口でした。'},
+         {q:'幕府が鎖国を行った最大の理由は？',opts:['外国の食文化を拒んだため','キリスト教の普及と植民地化を防ぐため','日本語を守るため','外国の商品が高すぎたため'],ans:1,exp:'キリスト教が広まると幕府への反乱につながる恐れがあり、またスペインやポルトガルの植民地化も警戒していました。'},
+         {q:'鎖国中にオランダ語で西洋の学問を研究することを何という？',opts:['国学','蘭学','洋学','儒学'],ans:1,exp:'オランダ語（蘭語）を通じて西洋の科学・医学・天文学などを学んだのが「蘭学」です。'}
+       ]},
+      {id:5,title:'享保の改革って緊縮財政？',subtitle:'——借金まみれの幕府を立て直せ！',keyword:'享保の改革',
+       scene:'📍 江戸城　幕府の会計室',
+       char1:{icon:'😱',name:'勘定奉行',line:'将軍様！幕府の貯金が\nほぼゼロでございます！\nこのままでは…'},
+       char2:{icon:'⚔️',name:'吉宗',line:'ならば改革あるのみ！\nまず倹約令だ。\n無駄遣いを全部やめろ！'},
+       eraLabel:'✂️ 享保の改革',eraIcon:'✂️',
+       eraPoints:['8代将軍・徳川吉宗が1716年から断行','倹約令：武士の給料カット・無駄遣い禁止','上げ米：大名から米を強制徴収','目安箱：庶民の意見を直接将軍に届ける仕組み','三大改革（享保・寛政・天保）のひとつ'],
+       nowLabel:'💴 現代の緊縮財政',nowIcon:'💴',
+       nowPoints:['公務員の給与削減・歳出カット','消費税・法人税の引き上げで税収増','新産業育成で税収増を目指す','パブリックコメント制度（目安箱の現代版）','IMFから「財政健全化」を求められる国も'],
+       modernReaction:'「倹約しろ」と言いながら\n自分も質素にする吉宗。\n今の政治家も見習ってほしい！',
+       eraReply:'上の者が手本を見せずして\n民に倹約を強いるのは\n筋が通らぬ。\nそれだけじゃ。',
+       quiz:[
+         {q:'享保の改革を行った将軍は？',opts:['徳川家康','徳川綱吉','徳川吉宗','徳川慶喜'],ans:2,exp:'享保の改革は8代将軍・徳川吉宗が1716年から行いました。'},
+         {q:'享保の改革で民衆の意見を集めるために作られたものは？',opts:['瓦版','目安箱','勘定所','寺子屋'],ans:1,exp:'目安箱は江戸城の門前に設置され、庶民が政策への意見を直接将軍に届けられる仕組みでした。'},
+         {q:'享保の改革は「三大改革」のひとつ。残り2つはどれ？',opts:['大化の改新・明治維新','寛政の改革・天保の改革','文明開化・富国強兵','廃藩置県・地租改正'],ans:1,exp:'江戸三大改革は享保（吉宗）・寛政（松平定信）・天保（水野忠邦）の改革です。'}
+       ]}
+    ,
+{
+  id:6,title:"享保の改革って緊縮財政？",subtitle:"——借金まみれの幕府を立て直せ！",keyword:"享保の改革",
+  scene:"📍 江戸城　幕府の会計室",
+  char1:{icon:"😱",name:"勘定奉行",line:"将軍様！幕府の貯金がほぼゼロでございます！このままでは……"},
+  char2:{icon:"⚔️",name:"吉宗",line:"ならば改革あるのみ！まず倹約令だ。無駄遣いを全部やめろ！"},
+  eraLabel:"享保の改革",eraIcon:"✂️",
+  eraPoints:["8代将軍・徳川吉宗が1716年から断行", "倹約令：武士の給料カット・無駄遣い禁止", "上げ米：大名から米を強制徴収", "目安箱：庶民の意見を直接将軍に届ける仕組み", "三大改革（享保・寛政・天保）のひとつ"],
+  nowLabel:"現代の緊縮財政",nowIcon:"💴",
+  nowPoints:["公務員の給与削減・歳出カット", "消費税・法人税の引き上げで税収増", "新産業育成で税収増を目指す", "パブリックコメント制度（目安箱の現代版）", "IMFから「財政健全化」を求められる国も"],
+  modernReaction:"「倹約しろ」と言いながら自分も質素にする吉宗。今の政治家も見習ってほしい！",
+  eraReply:"上の者が手本を見せずして民に倹約を強いるのは筋が通らぬ。それだけじゃ。",
+  quiz:[{q:"享保の改革を行った将軍は？",opts:["ア）徳川家康", "イ）徳川綱吉", "ウ）徳川吉宗", "エ）徳川慶喜"],ans:2,exp:"享保の改革は8代将軍・徳川吉宗が1716年から行いました。"},{q:"享保の改革で民衆の意見を集めるために作られたものは？",opts:["ア）瓦版", "イ）目安箱", "ウ）勘定所", "エ）寺子屋"],ans:1,exp:"目安箱は江戸城の門前に設置され、庶民が政策への意見を直接将軍に届けられる仕組みでした。"},{q:"享保の改革は「三大改革」のひとつ。残り2つはどれ？",opts:["ア）大化の改新・明治維新", "イ）寛政の改革・天保の改革", "ウ）文明開化・富国強兵", "エ）廃藩置県・地租改正"],ans:1,exp:"江戸三大改革は享保（吉宗）・寛政（松平定信）・天保（水野忠邦）の改革です。"}]
+},
+{
+  id:7,title:"株仲間って独占カルテル？",subtitle:"——「仲間以外は商売禁止」の世界。",keyword:"株仲間",
+  scene:"📍 江戸の町・新参の商人",
+  char1:{icon:"🧑‍💼",name:"新米商人",line:"この町でも魚を売りたいのですが……！"},
+  char2:{icon:"🐟",name:"魚問屋の親分",line:"だめだめ！うちの株仲間に入ってない者が魚を売ったら違反だよ。幕府公認のルールだ。"},
+  eraLabel:"株仲間",eraIcon:"🤝",
+  eraPoints:["同業者だけで作る幕府公認の組合", "加入者だけが商売できる", "価格を仲間で決めてしまう", "幕府に税を払って独占を守ってもらう", "新規参入を完全シャットアウト"],
+  nowLabel:"現代のカルテル",nowIcon:"🏢",
+  nowPoints:["企業同士で価格を話し合って決める", "新しい競合を排除しようとする", "消費者が損をする", "現代では「独占禁止法」で違法", "公正取引委員会が監視している"],
+  modernReaction:"江戸時代は政府がカルテルを公認してたの？今だと違法じゃん！",
+  eraReply:"逆に言えば幕府も税金が欲しいからお互い「Win-Win」だったわけよ。消費者は損だけどな……",
+  quiz:[{q:"株仲間が「独占」できた理由は？",opts:["ア）武力があったから", "イ）幕府が公認し税（運上金）を払う代わりに独占権を与えたから", "ウ）商品の質が一番良かったから", "エ）外国と貿易していたから"],ans:1,exp:"株仲間は幕府に「運上金」という税を納める代わりに商売の独占権を認められていました。"},{q:"天保の改革で株仲間が廃止されたが、その後どうなった？",opts:["ア）そのまま廃止が続いた", "イ）物流が混乱したため結局また復活した", "ウ）外国人が代わりに商売するようになった", "エ）政府が直接管理するようになった"],ans:1,exp:"株仲間廃止後、流通が混乱して物価が上昇したため、結局株仲間は復活させられました。"},{q:"現代で「株仲間的な独占」を禁止する法律は？",opts:["ア）商法", "イ）独占禁止法", "ウ）消費者保護法", "エ）会社法"],ans:1,exp:"独占禁止法は企業同士の価格カルテルや市場の独占を禁止し、公正な競争を守るための法律です。公正取引委員会が監視しています。"}]
+},
+{
+  id:8,title:"寺子屋って全学年混合の塾？",subtitle:"——6歳も12歳も同じ教室で学ぶ。",keyword:"寺子屋",
+  scene:"📍 寺子屋の教室　朝",
+  char1:{icon:"📖",name:"師匠（先生）",line:"はい今日も始めますよ〜。6歳から14歳まで全員一緒じゃ。"},
+  char2:{icon:"👦",name:"生徒（6歳）",line:"先生〜！となりのお兄ちゃんが教えてくれたよ！"},
+  eraLabel:"寺子屋",eraIcon:"📜",
+  eraPoints:["6〜14歳が同じ教室", "先生1人で全員を個別指導", "読み・書き・そろばんが中心", "月謝は米・魚・野菜でもOK", "年上の子が年下を教える文化"],
+  nowLabel:"現代の学校・塾",nowIcon:"🏫",
+  nowPoints:["学年ごとに完全分離", "科目別に先生が違う", "国語・数学・英語など幅広い", "授業料は現金（義務教育は無償）", "最近また「異学年交流」が注目中"],
+  modernReaction:"異学年混合って今の学校でもやってみたらいいのに。先輩に教えてもらいたい！",
+  eraReply:"教えることで自分も覚える。それが一番の勉強法じゃよ。",
+  quiz:[{q:"江戸末期の日本の識字率は世界的にどのレベルだったか？",opts:["ア）世界最低水準", "イ）平均的", "ウ）世界トップクラス", "エ）武士だけが読み書きできた"],ans:2,exp:"江戸末期の日本の識字率は世界トップクラスだったと言われています。寺子屋などの民間教育機関が普及を支えました。"},{q:"寺子屋で主に教えられた内容は？",opts:["ア）武道・剣術", "イ）読み・書き・そろばん", "ウ）外国語・貿易", "エ）農業技術"],ans:1,exp:"寺子屋では「読み・書き・そろばん」が中心でした。庶民の実生活に必要な実用的な教育が行われました。"},{q:"寺子屋は誰が運営していたか？",opts:["ア）幕府が全国統一で運営", "イ）各藩が管理した", "ウ）元武士・僧侶・医者などが個人で開いた民間の私塾", "エ）キリスト教の宣教師"],ans:2,exp:"寺子屋は元武士・僧侶・医者・町人など様々な人が個人で開いた民間の私塾でした。幕府が直接管理したわけではありません。"}]
+},
+{
+  id:9,title:"打ちこわしって江戸のデモ＆暴動？",subtitle:"——限界になった民衆が起こしたこと。",keyword:"打ちこわし",
+  scene:"📍 天明の大飢饉　1787年　江戸の町",
+  char1:{icon:"😡",name:"町人",line:"米の値段が3倍になったのにこの米屋は買い占めて売らないじゃないか！もう我慢できん！！"},
+  char2:{icon:"😰",name:"米屋の主人",line:"た、助けてくれ〜！！（店を打ち壊される）"},
+  eraLabel:"打ちこわし",eraIcon:"💥",
+  eraPoints:["飢饉・物価高騰が引き金", "米屋・豪商の家を破壊", "リーダーなしで自然発生", "幕府が政策を変えることも", "参加者は処罰されることも"],
+  nowLabel:"現代のデモ・暴動",nowIcon:"📢",
+  nowPoints:["格差・物価高・差別が引き金", "SNSで瞬時に拡散・集結", "平和的デモは法律で認められている", "暴動になると逮捕・起訴される", "世論が動けば政策が変わることも"],
+  modernReaction:"怒りが爆発するのはわかるけど……暴力はまずいよね。今はSNSで声を上げられるし。",
+  eraReply:"声を上げる手段が他になかったんだ。選挙もないし、新聞に投書もできないし。",
+  quiz:[{q:"天明の打ちこわし（1787年）が起きた背景は？",opts:["ア）将軍が交代したから", "イ）天明の大飢饉による食料不足と物価高騰", "ウ）外国が攻めてきたから", "エ）新しい法律への反発"],ans:1,exp:"1782〜87年の天明の大飢饉と米の価格高騰・買い占めへの怒りが打ちこわしを引き起こしました。"},{q:"打ちこわしが現代のデモと異なる点は？",opts:["ア）集団で行動する点", "イ）権力に訴えかける点", "ウ）法的に認められた行動ではなく器物損壊を伴う暴力行為だった点", "エ）食料不足への抗議という点"],ans:2,exp:"打ちこわしは米屋や豪商の財物を実力で破壊する行為で、現代の法律では違法です。現代の平和的なデモとは異なります。"},{q:"打ちこわしが示す「民衆の声」の重要性は？",opts:["ア）暴力が正当化されるということ", "イ）限界を超えた民衆の声は政策を変える力があるということ", "ウ）政府は民衆を恐れるべきということ", "エ）武力だけが変化をもたらすということ"],ans:1,exp:"打ちこわしは時に幕府に政策変更を迫る効果を持ちました。声を上げる手段がない時代の「最後の手段」でした。"}]
+},
+{
+  id:10,title:"蘭学って英語でAI論文を読む感覚？",subtitle:"——禁じられた言語で、最先端を学んだ人たち。",keyword:"蘭学",
+  scene:"📍 江戸・とある蘭学者の書斎　深夜",
+  char1:{icon:"🔬",name:"蘭学者",line:"「ハート」はオランダ語で……心臓のことか！これが本物の人体の仕組みか！！"},
+  char2:{icon:"📚",name:"弟子",line:"先生、この単語、日本語に訳す言葉がまだ存在しないのですが……"},
+  eraLabel:"蘭学",eraIcon:"📖",
+  eraPoints:["鎖国中にオランダ語で西洋科学を学ぶ", "辞書もほぼなく独力で解読", "訳語がないので新しい言葉を作る", "医学・天文学・兵学などを習得", "幕府に危険視されることも"],
+  nowLabel:"英語でAI論文を読む",nowIcon:"🤖",
+  nowPoints:["最先端の研究は英語でしか読めない", "日本語訳がない論文を独力で読む", "新しい概念の日本語訳を自分で考える", "AIや量子コンピュータなど最新分野", "その知識で社会を変える可能性を持つ"],
+  modernReaction:"英語って、今の時代の「蘭学」なんだ……！最先端に触れるための言語か。",
+  eraReply:"不便でも、壁があっても知ろうとする気持ちが時代を動かすんだよ。君たちも同じだ。",
+  quiz:[{q:"蘭学者たちが作った医学用語として現在も使われているものは？",opts:["ア）心臓・肺・肝臓", "イ）神経・動脈・軟骨・膵臓など", "ウ）脳・骨・皮膚", "エ）目・耳・口"],ans:1,exp:"「神経」「動脈」「軟骨」「膵臓」などは蘭学者たちがオランダ語の医学書を翻訳する際に新しく作った言葉で、現在も使われています。"},{q:"解体新書（1774年）を著した蘭学者は？",opts:["ア）福沢諭吉", "イ）杉田玄白・前野良沢", "ウ）伊能忠敬", "エ）シーボルト"],ans:1,exp:"杉田玄白と前野良沢らが、オランダ語の解剖書「ターヘル・アナトミア」を翻訳して「解体新書」（1774年）を出版しました。"},{q:"蘭学と現代の「英語でAI論文を読む」が共通する点は？",opts:["ア）どちらも政府が推奨している", "イ）外国語を通じて最先端の知識にアクセスし、それを自国語に翻訳・普及させる", "ウ）どちらも医学に関係している", "エ）どちらも危険な行為とされた"],ans:1,exp:"蘭学も現代の英語論文読解も「外国語を通じて最先端の知識にアクセスし、日本語に翻訳・普及させる」という構造が同じです。"}]
+}
+]
+  },
+  {
+    id:'meiji',cls:'meiji',icon:'🚂',name:'明治・大正',period:'1868〜1926年',
+    sub:'富国強兵・文明開化・条約改正',
+    bgVar:'--era-meiji-bg',accentVar:'--era-meiji-accent',textVar:'--era-meiji-text',badge:'近代',
+    aiTopics:['廃藩置県','地租改正','徴兵令','文明開化','条約改正','日清戦争','日露戦争','大正デモクラシー','産業革命','近代教育'],
+    episodes:[
+      {id:1,title:'富国強兵って国のリストラ＆筋トレ？',subtitle:'——弱い国から強い国へ、明治の大転換。',keyword:'富国強兵',
+       scene:'📍 1868年・明治政府発足直後',
+       char1:{icon:'🎖️',name:'明治政府の官僚',line:'欧米列強に\n植民地にされないためには\n強い国を作るしかない！\n富国強兵あるのみ！'},
+       char2:{icon:'😰',name:'元武士（士族）',line:'廃刀令！？\n秩禄廃止！？\n武士の特権が\n全部なくなった…'},
+       eraLabel:'⚙️ 富国強兵',eraIcon:'⚙️',
+       eraPoints:['廃藩置県で全国を中央政府が直接支配','四民平等で武士の特権廃止（廃刀令・秩禄処分）','徴兵令で国民全員に兵役義務','地租改正で安定した税収を確保','殖産興業で鉄道・工場・銀行を整備'],
+       nowLabel:'🏭 現代の国家経営改革',nowIcon:'🏭',
+       nowPoints:['古い産業・制度を廃止し新産業に転換','非効率な組織のリストラ・再編','国防予算の増強・軍備近代化','法律・制度を国際標準に合わせる改革','「強い国」を作るための痛みを伴う改革'],
+       modernReaction:'武士の特権を全部廃止して\n国を作り直すなんて\n相当な「改革の痛み」だったんだ。\n今の行政改革と同じ構造だ！',
+       eraReply:'古い仕組みにしがみつくと\n国ごと滅びる。\n痛くても変えなければ\nならぬ時がある。',
+       quiz:[
+         {q:'「富国強兵」スローガンの意味は？',opts:['国を豊かにして軍を強くする','農業を発展させる','外国と仲良くする','国民の自由を守る'],ans:0,exp:'富国強兵は「国を経済的に豊かにし、強い軍隊を持つ」という明治政府の基本政策でした。'},
+         {q:'富国強兵のために廃止されたものは？',opts:['天皇制','武士の身分（廃藩置県・秩禄処分）','農業','仏教'],ans:1,exp:'廃藩置県で藩を廃止し、武士（士族）の特権も廃止。近代的な中央集権国家を作るために武士制度が解体されました。'},
+         {q:'国民全員に兵役を課した制度は？',opts:['廃刀令','地租改正','徴兵令','学制'],ans:2,exp:'1873年の徴兵令で、士族・農民問わず満20歳の男性に3年間の兵役が義務付けられました。'}
+       ]},
+      {id:2,title:'文明開化って日本版アップデート？',subtitle:'——ちょんまげを切って、西洋を丸飲みした時代。',keyword:'文明開化',
+       scene:'📍 明治初期・銀座の大通り',
+       char1:{icon:'🎩',name:'文明開化の若者',line:'洋服を着て\n牛肉を食べて\n鉄道に乗る！\nこれが新しい日本だ！'},
+       char2:{icon:'👴',name:'頑固な老人',line:'なんじゃこの格好は！\nちょんまげはどうした！\n肉食は罰当たりじゃ…'},
+       eraLabel:'🎩 文明開化',eraIcon:'🎩',
+       eraPoints:['洋服・洋食・洋館など西洋の生活様式が急速に普及','太陽暦（新暦）を採用（1872年）','鉄道・電信・ガス灯が開通','「天は人の上に人を造らず」（福沢諭吉）で平等思想が広まる','牛鍋・洋食レストランが流行'],
+       nowLabel:'📱 現代のデジタル化',nowIcon:'📱',
+       nowPoints:['スマホ・SNS・AIが生活を激変させた','「使えない世代」と「使いこなす世代」の対立','紙の書類→電子化、現金→キャッシュレス','新技術を拒む人と積極的に使う人に分かれる','変化についていけないと「時代遅れ」に'],
+       modernReaction:'ちょんまげを切って西洋化するのって\n今でいう\n「スマホ・SNSへの移行」と\n同じ感覚だ！',
+       eraReply:'新しいものへの\n戸惑いは誰でも同じ。\nでも変わらなければ\n取り残されるのも事実じゃ。',
+       quiz:[
+         {q:'文明開化で変わったものとして正しくないのは？',opts:['洋服・洋食が広まった','太陽暦（新暦）を採用した','鉄道が開通した','武士の身分が復活した'],ans:3,exp:'文明開化では服装・食事・暦・建築・交通など西洋の生活様式が急速に広まりました。武士身分の復活はありません。'},
+         {q:'「学問のすすめ」を著し、「天は人の上に人を造らず」と説いた人物は？',opts:['西郷隆盛','福沢諭吉','伊藤博文','坂本龍馬'],ans:1,exp:'福沢諭吉は「学問のすすめ」で平等思想と実学の重要性を説き、近代日本の啓蒙に大きな影響を与えました。'},
+         {q:'1872年に日本初の鉄道が開通したのはどこの間？',opts:['東京〜大阪','新橋〜横浜','京都〜神戸','東京〜仙台'],ans:1,exp:'1872年に新橋〜横浜間で日本初の鉄道が開通。約29kmを53分で走り、人々を驚かせました。'}
+       ]},
+      {id:3,title:'条約改正って屈辱からの逆転交渉？',subtitle:'——不平等条約を変えるまでに40年かかった。',keyword:'条約改正',
+       scene:'📍 明治時代・外務省での交渉',
+       char1:{icon:'🤝',name:'欧米の外交官',line:'日本は独自の法律で\n我々を裁けぬ。\n我々は日本の法に\n従う必要はない。'},
+       char2:{icon:'😤',name:'日本の外務大臣',line:'この不平等を\n必ず変えてみせる！\n40年かかっても…！'},
+       eraLabel:'📜 不平等条約と改正',eraIcon:'📜',
+       eraPoints:['幕末に結んだ条約に「領事裁判権」と「関税自主権なし」の2大不平等','外国人が日本で犯罪を犯しても日本の法律で裁けない','日本が関税を自由に決められない→輸入品が安くなり国産品が打撃','陸奥宗光が1894年に治外法権（領事裁判権）を撤廃','小村寿太郎が1911年に関税自主権を完全回復'],
+       nowLabel:'🌐 現代の不平等な国際ルール',nowIcon:'🌐',
+       nowPoints:['発展途上国が先進国に有利なルールを強いられるケース','貿易協定（FTA・EPA）での交渉力の差','WTOのルールが先進国有利とも批判される','「主権」の確保が現代でも外交の最重要課題','外国人特権・治外法権は現代の軍事基地協定にも残る面が'],
+       modernReaction:'「自国で犯罪者を裁けない」なんて\n今では考えられないけど\n昔の日本はそんな状態だったのか。\n40年かけて変えたのはすごい！',
+       eraReply:'屈辱を胸に\n実力をつけて\n交渉で勝ち取る。\n外交とは忍耐じゃ。',
+       quiz:[
+         {q:'幕末に結ばれた不平等条約の問題点は？',opts:['関税を高く設定させられた','領事裁判権（治外法権）と関税自主権がなかった','外国との貿易が禁止された','軍隊を持てなかった'],ans:1,exp:'日本は外国人が日本の法律で裁かれない「領事裁判権」と、輸入品の関税を自由に決められない「関税自主権の欠如」という不平等な条件を強いられました。'},
+         {q:'領事裁判権の撤廃に成功した外務大臣は？',opts:['岩倉具視','陸奥宗光','小村寿太郎','伊藤博文'],ans:1,exp:'1894年、外務大臣・陸奥宗光がイギリスとの交渉で領事裁判権（治外法権）の撤廃に成功しました。'},
+         {q:'関税自主権を完全に回復したのはいつ？',opts:['1868年の明治維新直後','1894年','1911年（明治末期）','1945年'],ans:2,exp:'1911年、外務大臣・小村寿太郎がアメリカとの交渉で関税自主権を完全回復。幕末から約50年かかりました。'}
+       ]}
+    ,
+{
+          id:4,title:"廃藩置県って全国一斉リストラ？",subtitle:"——大名の領地を国が一括管理にした。",keyword:"廃藩置県",
+          scene:"📍 1871年・東京　大名たちが呼ばれる",
+          char1:{icon:"🎖️",name:"明治政府の官僚",line:"本日より藩を廃止し県を置く。大名の皆様には東京に住んでもらう。"},
+          char2:{icon:"😲",name:"元大名",line:"我が藩が……突然なくなるのか。給料はどうなるの？"},
+          eraLabel:"廃藩置県",eraIcon:"🎖️",
+          eraPoints:["1871年、明治政府が全国の藩を廃止し府県を設置", "約270の藩が一斉に廃止された", "元大名には「家禄」として給与が支払われた", "中央政府が任命する知事が各府県を管轄", "一夜にして全国が中央集権国家に変わった"],
+          nowLabel:"現代の大規模組織再編",nowIcon:"🏢",
+          nowPoints:["大企業の子会社・部門を一斉に統合・廃止", "M&A後の組織再編で「支社」を「本社直轄」に変える", "突然の組織変更で社員が混乱する", "「既得権益の剥奪」は常に反発を呼ぶ", "中央集権化で効率は上がるが地方の個性が失われる"],
+          modernReaction:"270もの藩を一気に廃止するって超大規模な組織再編だ。反発があってもやり切れたのはすごい！",
+          eraReply:"改革は一気にやらないと抵抗に負けてしまう。「ショック療法」が必要なこともある。",
+          quiz:[{q:"廃藩置県が行われた年は？",opts:["ア）1868年", "イ）1871年", "ウ）1877年", "エ）1889年"],ans:1,exp:"1871年（明治4年）7月、明治政府は全国の藩を廃止して府・県を設置する「廃藩置県」を断行しました。"},{q:"廃藩置県後、各府県を治めるために中央から派遣されたのは？",opts:["ア）元大名（藩主）", "イ）中央政府が任命した知事（県令）", "ウ）軍の将校", "エ）地元の有力者"],ans:1,exp:"廃藩置県後、各府県には中央政府が任命した知事（県令）が派遣され、中央集権的な統治が実現しました。"},{q:"廃藩置県に対して旧武士（士族）が最大規模の反乱を起こしたのは？",opts:["ア）五稜郭の戦い", "イ）西南戦争", "ウ）戊辰戦争", "エ）秋月の乱"],ans:1,exp:"1877年の西南戦争は、西郷隆盛を擁した士族が起こした最大の反政府反乱です。廃藩置県・廃刀令などで特権を失った士族の不満が爆発しました。"}]
+        },
+{
+          id:5,title:"大日本帝国憲法って「お上が決める」憲法？",subtitle:"——欧米と全く違う「君主主権」の仕組み。",keyword:"大日本帝国憲法",
+          scene:"📍 1889年2月11日・東京　憲法発布式",
+          char1:{icon:"📜",name:"伊藤博文",line:"この憲法は天皇が国民に与えるものじゃ。プロイセンをモデルにした。"},
+          char2:{icon:"🧒",name:"現代の子",line:"国民が作る憲法じゃなく天皇が与える憲法。トップダウンの会社規則みたいだ！"},
+          eraLabel:"大日本帝国憲法",eraIcon:"📜",
+          eraPoints:["1889年2月11日に発布（欽定憲法）", "天皇が国民に「与える」形式（欽定憲法）", "天皇主権：統治権は天皇に集中", "ドイツ（プロイセン）の憲法をモデルに伊藤博文が作成", "帝国議会（貴族院・衆議院）が設置された"],
+          nowLabel:"現代の民主主義憲法との違い",nowIcon:"🗳️",
+          nowPoints:["日本国憲法（1947年）は国民主権（正反対！）", "「与えられた権利」vs「生まれながらの権利」", "会社規則は会社が決める↔労働法は国が保護", "トップダウンの規則とボトムアップの権利は正反対", "憲法の「誰が主権者か」が国の性格を決める"],
+          modernReaction:"天皇が「与える」憲法と国民が「持つ」憲法では全然違う。今の日本国憲法との違いが面白い！",
+          eraReply:"権利は与えられるものではなく勝ち取るものじゃと後の世代が証明した。",
+          quiz:[{q:"大日本帝国憲法で「主権」を持つのは誰か？",opts:["ア）国民", "イ）天皇", "ウ）議会", "エ）内閣"],ans:1,exp:"大日本帝国憲法では天皇が統治権（主権）を持つ「天皇主権」でした。現行の日本国憲法では「国民主権」です。"},{q:"大日本帝国憲法のモデルとなった国は？",opts:["ア）イギリス", "イ）フランス", "ウ）ドイツ（プロイセン）", "エ）アメリカ"],ans:2,exp:"伊藤博文はドイツ（プロイセン）の憲法・政治制度を研究し、大日本帝国憲法の基礎としました。"},{q:"大日本帝国憲法で設置された議会は？",opts:["ア）一院制の国会", "イ）貴族院と衆議院からなる帝国議会", "ウ）選挙で選ばれる一院のみ", "エ）天皇の諮問機関のみ"],ans:1,exp:"帝国議会は貴族院（皇族・華族・勅任議員）と衆議院（選挙で選出）の二院制でした。"}]
+        },
+{
+          id:6,title:"日清戦争って初めての対外戦争？",subtitle:"——朝鮮半島を巡る日本と清国の争い。",keyword:"日清戦争",
+          scene:"📍 1894〜95年・朝鮮半島",
+          char1:{icon:"⚔️",name:"明治の軍人",line:"朝鮮の独立を守るため清国と戦う！我が国の安全保障のためじゃ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"近隣国の情勢が自国の安全に影響する。「勢力圏」を巡る争いは今も続く。"},
+          eraLabel:"日清戦争",eraIcon:"⚔️",
+          eraPoints:["1894〜95年、日本と清国（中国）の戦争", "朝鮮半島の支配権を巡る争い", "日本が勝利→下関条約で台湾・遼東半島を獲得", "三国干渉（ロシア・フランス・ドイツ）で遼東半島返還", "賠償金2億両が日本の軍事・産業発展に使われた"],
+          nowLabel:"現代の地域覇権争い",nowIcon:"🌏",
+          nowPoints:["台湾・南シナ海・朝鮮半島は今も地政学的緊張地帯", "「勢力圏」を巡る大国間の争いは変わらない", "経済的優位と軍事力は今も連動する", "「近隣国の安定」が自国の安全保障に直結", "賠償金→軍拡→さらなる戦争という連鎖は要注意"],
+          modernReaction:"130年前の争いが今も同じ地域で続いているのか。地政学的な問題って変わらないんだな。",
+          eraReply:"地理は変わらない。ゆえに争いの場所も変わらない。歴史を知ることが現在を理解する鍵じゃ。",
+          quiz:[{q:"日清戦争の講和条約は？",opts:["ア）ポーツマス条約", "イ）下関条約", "ウ）サンフランシスコ条約", "エ）日韓基本条約"],ans:1,exp:"1895年、日清戦争の講和として結ばれた下関条約で、日本は台湾・遼東半島の割譲と賠償金2億両を清から獲得しました。"},{q:"三国干渉とは何か？",opts:["ア）日本が3カ国に攻め込んだ事件", "イ）ロシア・フランス・ドイツが遼東半島の返還を日本に求めた", "ウ）3カ国が日本に宣戦布告した", "エ）日本が3カ国と同盟を結んだ"],ans:1,exp:"下関条約直後、ロシア・フランス・ドイツが「遼東半島を持つと東アジアの平和を乱す」として日本に返還を要求しました。"},{q:"日清戦争の賠償金が主に使われた目的は？",opts:["ア）国民への配分", "イ）軍備拡張と産業発展（八幡製鉄所など）", "ウ）外国債務の返済", "エ）農業振興"],ans:1,exp:"賠償金約2億両（当時の日本の国家予算の約3.5倍）は主に軍備拡張と産業発展（八幡製鉄所の建設など）に使われ、日本の近代化を加速させました。"}]
+        },
+{
+          id:7,title:"日露戦争って「小国が大国に勝った」奇跡？",subtitle:"——世界を驚かせた日本海海戦の勝利。",keyword:"日露戦争",
+          scene:"📍 1905年・日本海　東郷平八郎の旗艦",
+          char1:{icon:"⚓",name:"東郷平八郎",line:"丁字戦法でバルチック艦隊を包囲する！かかれ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"世界最強クラスの艦隊に勝った。ジャイアントキリングって今もスポーツで起きるよね。"},
+          eraLabel:"日露戦争",eraIcon:"⚓",
+          eraPoints:["1904〜05年、日本vsロシアの戦争", "満州・朝鮮半島の支配権を巡る争い", "日本海海戦（1905年）でバルチック艦隊を撃破", "ポーツマス条約（アメリカの仲介）で講和", "アジアの小国が欧州大国を破り世界を驚かせた"],
+          nowLabel:"現代のジャイアントキリング",nowIcon:"🏆",
+          nowPoints:["格下のスポーツチームが強豪に勝つ", "スタートアップが大企業のシェアを奪う", "「勝てない」と言われた側が勝つ条件：戦略・技術・士気", "「奇跡」も準備と戦略があってこそ", "勝利の後のメンテナンス（国内の疲弊）も重要"],
+          modernReaction:"日本がロシアに勝ったのか！でも日露戦争で日本も疲弊してたんだ。勝っても消耗するのはスポーツと同じ。",
+          eraReply:"勝利は終わりではない。勝った後に何を失ったかを冷静に見ることが本当の智慧じゃ。",
+          quiz:[{q:"日露戦争の講和条約（1905年）はどこで結ばれた？",opts:["ア）東京", "イ）ポーツマス（アメリカ）", "ウ）パリ", "エ）ロンドン"],ans:1,exp:"1905年、アメリカのポーツマスでルーズベルト大統領の仲介のもとポーツマス条約が結ばれました。日本は南樺太と旅順・大連の租借権を獲得しました。"},{q:"日本海海戦で日本艦隊を指揮した将軍は？",opts:["ア）伊藤博文", "イ）山縣有朋", "ウ）東郷平八郎", "エ）乃木希典"],ans:2,exp:"東郷平八郎提督が率いる連合艦隊がロシアのバルチック艦隊をほぼ完全に撃滅しました。"},{q:"日露戦争後、日本が韓国（朝鮮）に対して行ったことは？",opts:["ア）韓国に独立を認めた", "イ）韓国を保護国化→1910年に「韓国併合」した", "ウ）韓国と同盟を結んだ", "エ）韓国の独立を国際社会に訴えた"],ans:1,exp:"日露戦争後、日本は韓国を保護国とし、1910年には「韓国併合」を行って植民地としました。"}]
+        },
+{
+          id:8,title:"産業革命って「工場で働く時代」の始まり？",subtitle:"——農村から都市へ。働き方が根本から変わった。",keyword:"産業革命",
+          scene:"📍 明治時代・大阪の紡績工場",
+          char1:{icon:"🏭",name:"工場主",line:"機械を使えば大量に綿織物が作れる！女工を雇って24時間操業じゃ。"},
+          char2:{icon:"😰",name:"女工",line:"12時間労働で賃金は安い……工場の中の空気も悪い…"},
+          eraLabel:"日本の産業革命",eraIcon:"🏭",
+          eraPoints:["1880〜1900年代、軽工業（紡績・製糸）から重工業へ", "農村の若者（特に女性）が工場労働者に", "「女工哀史」に見られる過酷な労働環境", "八幡製鉄所（1901年）の設立で重工業化", "都市への人口集中・労働問題・公害が発生"],
+          nowLabel:"現代の働き方革命",nowIcon:"💻",
+          nowPoints:["AIによる「仕事がなくなる」問題（第4次産業革命）", "農村から都市への移動→デジタル化で場所を選ばない時代へ", "過酷な労働環境は今も途上国の工場で続く", "「機械が仕事を奪う」恐怖は産業革命から変わらない", "労働者の権利運動が社会を変えてきた"],
+          modernReaction:"明治の産業革命と今のAI革命って構造が同じだ！「機械に仕事を奪われる」不安は200年前から変わらない。",
+          eraReply:"技術は社会を変える。変化の中で誰が恩恵を受け誰が苦しむかを見続けることが大切じゃ。",
+          quiz:[{q:"明治の産業革命で最初に発展した産業は？",opts:["ア）鉄鋼・造船などの重工業", "イ）紡績・製糸などの軽工業", "ウ）農業・林業", "エ）情報通信業"],ans:1,exp:"日本の産業革命は綿糸・絹糸を作る軽工業（紡績・製糸）から始まりました。"},{q:"1901年に設立された官営製鉄所は？",opts:["ア）川崎製鉄所", "イ）八幡製鉄所", "ウ）大阪製鉄所", "エ）横須賀製鉄所"],ans:1,exp:"1901年、福岡県八幡に設立された八幡製鉄所は日本初の本格的な官営製鉄所で、日本の重工業化の象徴となりました。"},{q:"産業革命期の「女工哀史」が示す問題は？",opts:["ア）女性の教育機会の不足", "イ）工場での過酷な労働環境・低賃金・健康被害", "ウ）女性の政治参加の問題", "エ）農村の過疎化"],ans:1,exp:"「女工哀史」（1925年刊行）は紡績・製糸工場で働く女性労働者の過酷な実態（長時間労働・低賃金・結核など）を記録した本です。"}]
+        },
+{
+          id:9,title:"大正デモクラシーって「民主主義の芽生え」？",subtitle:"——普通選挙・言論の自由を求めた時代。",keyword:"大正デモクラシー",
+          scene:"📍 大正時代・東京　デモ行進",
+          char1:{icon:"✊",name:"運動家",line:"普通選挙を実現させよ！男子全員に選挙権を！民主主義の時代じゃ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"「選挙権は納税者だけ」から「全員に」へ。その当たり前を戦って勝ち取ったのか。"},
+          eraLabel:"大正デモクラシー",eraIcon:"✊",
+          eraPoints:["1912〜26年頃の民主主義・自由主義運動の高まり", "吉野作造の「民本主義」が理論的支柱", "普通選挙運動→1925年に男子普通選挙法成立", "労働運動・社会主義運動・女性解放運動も活発化", "一方、治安維持法（1925年）で思想弾圧も強化"],
+          nowLabel:"現代の民主主義運動",nowIcon:"🗳️",
+          nowPoints:["「選挙権の拡大」は世界中で段階的に実現してきた", "SNSを使ったデモ・政治参加運動", "若者の投票率低下という「逆行」も起きている", "「当たり前の権利」は先人が戦って勝ち取ったもの", "権利は使わないと失われていく"],
+          modernReaction:"男子普通選挙権でさえ戦って勝ち取ったのか。今の投票率の低さって、その価値を忘れてるのかも。",
+          eraReply:"権利は勝ち取るものじゃ。与えられるのを待っていては永遠に来ない。",
+          quiz:[{q:"大正デモクラシーの理論的支柱となった吉野作造の主張は？",opts:["ア）天皇主権の強化", "イ）民本主義（政治は民衆の幸福のために行うべき）", "ウ）社会主義革命", "エ）軍国主義の推進"],ans:1,exp:"吉野作造は「民本主義」を唱え、天皇主権の下でも政治は民衆の幸福を目的とし民衆の意向に沿うべきだと主張しました。"},{q:"男子普通選挙法が成立した年は？",opts:["ア）1912年", "イ）1919年", "ウ）1925年", "エ）1945年"],ans:2,exp:"1925年（大正14年）に男子普通選挙法が成立し、満25歳以上のすべての男性に選挙権が与えられました（女性の参政権は1945年）。"},{q:"大正デモクラシーと同じ年（1925年）に成立した「民主主義の弾圧」法は？",opts:["ア）廃刀令", "イ）治安維持法", "ウ）国家総動員法", "エ）教育勅語"],ans:1,exp:"1925年、普通選挙法と同年に治安維持法が制定されました。国体変革や私有財産制度の否定を目的とする運動を取り締まりました。"}]
+        },
+{
+          id:10,title:"近代教育って「国民を作る」プロジェクト？",subtitle:"——学制から教育勅語まで。国家が教育を支配した。",keyword:"近代教育",
+          scene:"📍 明治時代・小学校の教室",
+          char1:{icon:"📚",name:"明治の教師",line:"皆さんは天皇陛下のために勉強するのです。勤勉で従順な国民になりなさい。"},
+          char2:{icon:"🧒",name:"現代の子",line:"国家が教育の内容を決める。今も「どんな人材を育てるか」って国の方針が学校に影響してるよね。"},
+          eraLabel:"明治の近代教育",eraIcon:"📚",
+          eraPoints:["1872年・学制発布で近代教育制度が始まる", "1890年・教育勅語で忠君愛国の価値観を全国統一", "小学校が義務教育化（識字率が急上昇）", "「富国強兵」のための人材育成が主目的", "帝国大学（東大）設立で高等教育も整備"],
+          nowLabel:"現代の教育と国家",nowIcon:"🎓",
+          nowPoints:["学習指導要領（国が教育内容を決める仕組み）", "「愛国心」教育の議論は今も続く", "STEM教育重視（理系人材育成）も国家戦略", "「何を教えるか」は権力が関与したがる問題", "批判的思考力を育てるかどうかで民主主義の質が変わる"],
+          modernReaction:"学校教育って国が「必要な人材」を作るシステムなのか。今の学習指導要領も同じ仕組みなんだ。",
+          eraReply:"教育は国の未来を作る。ゆえに国家は常に教育を支配しようとする。それが良いことか悪いことかはあなたが考えよ。",
+          quiz:[{q:"近代日本の教育制度の出発点となった法令は？",opts:["ア）教育勅語", "イ）学制（1872年）", "ウ）教育基本法", "エ）小学校令"],ans:1,exp:"1872年（明治5年）に「学制」が発布され、近代的な学校制度が始まりました。"},{q:"教育勅語（1890年）の内容として正しいのは？",opts:["ア）国民の自由と平等を宣言した", "イ）忠君愛国・勤勉などの道徳規範を示した", "ウ）義務教育の年数を定めた", "エ）女性の教育権を認めた"],ans:1,exp:"教育勅語は天皇への忠誠・親への孝行・勤勉などの道徳規範を示したもので、学校で毎朝朗読されました。"},{q:"明治政府が近代教育を整備した主な目的は？",opts:["ア）国民の幸福のため", "イ）富国強兵のための人材育成と国民の統合", "ウ）外国文化の研究のため", "エ）宗教教育の普及のため"],ans:1,exp:"明治政府の近代教育の目的は「富国強兵」のための有能な人材育成と、「天皇の臣民」としての国民意識の統合でした。"}]
+        }
+]
+  },
+  {
+    id:'showa',cls:'showa',icon:'📻',name:'昭和',period:'1926〜1989年',
+    sub:'戦争・高度経済成長・安保',
+    bgVar:'--era-showa-bg',accentVar:'--era-showa-accent',textVar:'--era-showa-text',badge:'現代',
+    aiTopics:['満州事変','太平洋戦争','原爆投下','東京大空襲','高度経済成長','安保闘争','学生運動','バブル経済','テレビの普及','昭和の家族'],
+    episodes:[
+      {id:1,title:'高度経済成長って日本版奇跡？',subtitle:'——20年でGDP10倍、その代償は何だったか。',keyword:'高度経済成長',
+       scene:'📍 1964年・東京オリンピック開会式',
+       char1:{icon:'🏭',name:'工場の経営者',line:'去年より売上が\nまた10%増えた！\n来年も工場を増設するぞ！\nどんどん作れ！'},
+       char2:{icon:'😷',name:'公害地域の住民',line:'川が黒くなった…\n煙が臭い…\n子供が咳をしてる…\nこれが「豊かさ」なのか？'},
+       eraLabel:'📈 高度経済成長',eraIcon:'📈',
+       eraPoints:['1955〜1973年、年平均10%の経済成長','三種の神器（テレビ・洗濯機・冷蔵庫）が普及','1964年・東京オリンピック＆東海道新幹線開業','四大公害病（水俣病・イタイイタイ病など）が発生','1973年・石油ショックで高度成長が終わる'],
+       nowLabel:'🌱 現代の「成長と環境問題」',nowIcon:'🌱',
+       nowPoints:['途上国の急速な経済成長と環境汚染','SDGs「経済成長と環境保護の両立」が課題','CO2排出削減vs.経済成長のジレンマ','「豊かさ」の定義が変わってきている','GDPだけでなく「幸福度・環境」で国を評価する動き'],
+       modernReaction:'経済が成長すれば\n必ず公害が起きるってことじゃないけど\nバランスを取るのが\n現代の最大の課題なんだ。',
+       eraReply:'豊かさと引き換えに\n何かを失っていた。\nそれに気づくのに\n時間がかかりすぎた。',
+       quiz:[
+         {q:'高度経済成長期（1955〜1973年）の経済成長率は平均で？',opts:['年約2%','年約5%','年約10%','年約20%'],ans:2,exp:'高度経済成長期の日本の実質GDP成長率は年平均約10%。世界でも類を見ない急成長でした。'},
+         {q:'高度経済成長を象徴する1964年の出来事は？',opts:['大阪万博','東京オリンピック・東海道新幹線開業','沖縄返還','日中国交正常化'],ans:1,exp:'1964年に東京オリンピックが開催され、同年に東海道新幹線（東京〜新大阪）が開業しました。'},
+         {q:'高度経済成長の「代償」として起きた問題は？',opts:['食料不足','四大公害病（水俣病・イタイイタイ病など）','失業率の急増','農業生産の崩壊'],ans:1,exp:'急速な工業化で水俣病・四日市ぜんそく・イタイイタイ病・新潟水俣病の「四大公害病」が発生しました。'}
+       ]},
+      {id:2,title:'太平洋戦争ってなぜ起きた？',subtitle:'——資源なき国の「出口なき選択」。',keyword:'太平洋戦争',
+       scene:'📍 1941年12月8日・ハワイ・真珠湾',
+       char1:{icon:'✈️',name:'日本軍パイロット',line:'真珠湾奇襲成功！\nアメリカ太平洋艦隊を\n叩いた！\nこれで戦える！'},
+       char2:{icon:'😨',name:'アメリカ水兵',line:'突然の攻撃だ…\nこれで日本との\n全面戦争が始まる…'},
+       eraLabel:'⚔️ 太平洋戦争',eraIcon:'⚔️',
+       eraPoints:['石油など資源を持たない日本が東南アジアへ進出','アメリカが石油の対日輸出を禁止→戦争の引き金に','1941年12月8日、真珠湾奇襲でアメリカに宣戦布告','1945年8月・広島・長崎への原爆投下','1945年8月15日・終戦（玉音放送）'],
+       nowLabel:'🛢️ 現代の資源と外交',nowIcon:'🛢️',
+       nowPoints:['日本は今も石油の99%以上を輸入に依存','資源を「武器」に使う国（ロシアのガス供給停止など）','資源確保のために外交・同盟が決定的に重要','経済制裁は現代の「石油禁輸」と同じ仕組み','エネルギー自立（再生可能エネルギー）が現代の国家課題'],
+       modernReaction:'石油を止められたら\n戦争を選ぶしかなかったのか…\n今もエネルギーは\n外交・安全保障の核心だ。',
+       eraReply:'資源のない国が\n大国と戦う。\nそれがどれだけ\n無謀だったか…\n後からならわかる。',
+       quiz:[
+         {q:'日本がアメリカに宣戦布告した奇襲作戦は？',opts:['ノルマンディー上陸作戦','真珠湾攻撃','バルバロッサ作戦','沖縄戦'],ans:1,exp:'1941年12月8日、日本海軍がハワイの真珠湾にあるアメリカ太平洋艦隊基地を奇襲攻撃し、太平洋戦争が始まりました。'},
+         {q:'アメリカが広島・長崎に原子爆弾を投下したのはいつ？',opts:['1944年','1945年8月','1946年','1943年'],ans:1,exp:'1945年8月6日に広島、8月9日に長崎に原子爆弾が投下されました。'},
+         {q:'日本が敗戦を受け入れポツダム宣言を受諾したのは？',opts:['1944年','1945年8月15日','1946年','1947年'],ans:1,exp:'1945年8月15日、昭和天皇がラジオで終戦の詔書（玉音放送）を読み上げ、日本の敗戦が国民に伝えられました。'}
+       ]},
+      {id:3,title:'バブル経済って狂乱の宴？',subtitle:'——土地と株が夢の価格になった時代。',keyword:'バブル経済',
+       scene:'📍 1989年・東京・ディスコと高級車',
+       char1:{icon:'💰',name:'バブル時代の会社員',line:'土地を買えば\n明日には値上がりする！\nタクシーは1万円札で\n止めればいい！'},
+       char2:{icon:'😰',name:'若者（バブル後）',line:'生まれた時には\nもう崩壊してた…\n「失われた30年」って\n自分たちのことじゃん。'},
+       eraLabel:'💹 バブル経済',eraIcon:'💹',
+       eraPoints:['1980年代後半、株・土地の価格が異常高騰','東京の地価だけでアメリカ全土が買えると言われた','タクシーを1万円札で止める・ゴルフ会員権が高騰','1990〜91年の金融引き締めでバブル崩壊','「失われた10年→20年→30年」と長期停滞が続く'],
+       nowLabel:'📊 現代の資産バブル',nowIcon:'📊',
+       nowPoints:['現代でも株・仮想通貨・NFTのバブルと崩壊が繰り返される','低金利が資産価格を押し上げる仕組みは同じ','「今度こそ違う」と思って買った人が最後に損をする','中国の不動産バブルも同じ構造','バブルは「みんなが信じている間は続く」という心理現象'],
+       modernReaction:'仮想通貨やNFTが\n爆上がりして崩壊したのって\nバブルと全く同じ構造じゃん！\n歴史は繰り返すんだ。',
+       eraReply:'「今度こそ違う」\nその言葉が\nバブルが崩壊する前の\nサインじゃ。',
+       quiz:[
+         {q:'バブル経済のピーク（1989年）、東京の地価と同じ価格で買えたとされたのは？',opts:['北海道全土','アメリカ全土','ヨーロッパ全土','オーストラリア全土'],ans:1,exp:'バブル絶頂期の1989年、東京都の地価だけでアメリカ全土が買えるとも言われたほど、地価が異常に高騰しました。'},
+         {q:'バブル崩壊の原因となった政府・日銀の政策は？',opts:['消費税の導入','急激な金融引き締め（金利引き上げ）','貿易摩擦','石油ショック'],ans:1,exp:'日本銀行が急激に金利を引き上げたことでお金を借りにくくなり、土地・株への投資が急激に冷え込んでバブルが崩壊しました。'},
+         {q:'バブル崩壊後の1990年代は日本で何と呼ばれる？',opts:['高度成長期','失われた10年（20年）','昭和の奇跡','平成ルネサンス'],ans:1,exp:'バブル崩壊後の1990年代は「失われた10年」（後に「失われた20年・30年」とも）と呼ばれ、長期の経済停滞が続きました。'}
+       ]}
+    ,
+{
+          id:4,title:"満州事変って軍部の暴走の始まり？",subtitle:"——政府の意思を無視して軍が動いた。",keyword:"満州事変",
+          scene:"📍 1931年9月18日・奉天（中国東北部）",
+          char1:{icon:"💣",name:"関東軍の将校",line:"南満州鉄道を自分たちで爆破した。中国の仕業に見せかけて満州占領の口実にする！"},
+          char2:{icon:"🧒",name:"現代の子",line:"自作自演で戦争を起こす。フェイクニュースを使った戦争の原因作りじゃん！"},
+          eraLabel:"満州事変",eraIcon:"💣",
+          eraPoints:["1931年9月18日、関東軍が南満州鉄道を自作自演で爆破", "中国の仕業として満州全土を占領（柳条湖事件）", "政府・天皇の意思を無視した軍部の独断行動", "1932年、満州国を建国（事実上の植民地）", "国際連盟の批判を受けて日本が脱退（1933年）"],
+          nowLabel:"現代の「偽旗作戦」・フェイクニュース",nowIcon:"📺",
+          nowPoints:["戦争の口実を作るための「偽旗作戦」は現代でも", "フェイクニュースで世論を操作して戦争に誘導", "SNSで拡散される「誰が始めたか」の情報戦", "「事実確認」の重要性は今も変わらない", "軍部の独断→現代では「文民統制の原則」で防ぐ"],
+          modernReaction:"自作自演で戦争を始めるって最悪だ。でも「偽旗作戦」って現代でも行われてるって聞くし、情報の確認って本当に大事。",
+          eraReply:"真実よりも「信じさせること」が重要になった時、社会は危険になる。事実を見極める目を持て。",
+          quiz:[{q:"満州事変のきっかけとなった「柳条湖事件」の真相は？",opts:["ア）中国軍が南満州鉄道を爆破した", "イ）関東軍が自ら南満州鉄道を爆破して中国の仕業に見せかけた", "ウ）自然災害で鉄道が破壊された", "エ）中国と日本の偶発的な衝突"],ans:1,exp:"柳条湖事件は関東軍の将校が自ら南満州鉄道を爆破して中国軍の仕業に見せかけた「謀略」でした。"},{q:"満州事変を批判した国際連盟に対して日本はどうしたか？",opts:["ア）謝罪して軍を撤退させた", "イ）国際連盟を脱退した（1933年）", "ウ）戦争をやめて交渉した", "エ）国際連盟の決定を受け入れた"],ans:1,exp:"リットン調査団の報告書が日本軍の撤退を勧告したため、1933年に日本は国際連盟を脱退しました。"},{q:"満州事変が示す「軍部の暴走」の問題とは？",opts:["ア）軍人が天皇に反抗した", "イ）軍部が政府・議会の意思を無視して独断で行動した", "ウ）軍の予算が不足した", "エ）軍人の給与が高すぎた"],ans:1,exp:"満州事変は政府・天皇の意思確認なしに関東軍が独断で起こしました。軍部が政治的決定を無視して行動する問題の象徴的な事例です。"}]
+        },
+{
+          id:5,title:"東京大空襲って戦争の残酷さを示す夜？",subtitle:"——1945年3月10日、10万人が亡くなった。",keyword:"東京大空襲",
+          scene:"📍 1945年3月10日・東京　午前0時過ぎ",
+          char1:{icon:"🔥",name:"空襲を生き延びた人",line:"あたり一面が火の海じゃ……逃げる場所がない……家族はどこに……"},
+          char2:{icon:"🧒",name:"現代の子",line:"民間人がこんなに犠牲になるの……戦争って「軍と軍の戦い」じゃないんだ。"},
+          eraLabel:"東京大空襲",eraIcon:"🔥",
+          eraPoints:["1945年3月10日深夜、B-29約300機が東京を焼夷弾で爆撃", "死者約10万人、罹災者100万人以上", "木造密集地帯を狙った計画的な無差別爆撃", "東京だけでなく全国100以上の都市が空襲を受けた", "民間人への被害が第二次世界大戦の特徴の一つ"],
+          nowLabel:"現代の戦争と民間人被害",nowIcon:"🕊️",
+          nowPoints:["現代の戦争でも民間人が最大の被害者になる", "ウクライナ・ガザなどの現在進行中の紛争", "「軍事目標」と「民間人」の区別（国際人道法）", "報道が届かない戦場での民間人被害", "「戦争のない世界」は今も未達成の目標"],
+          modernReaction:"10万人が一夜で亡くなる。戦争って軍人だけじゃなく普通の人が一番犠牲になるんだ。今も世界中で続いている。",
+          eraReply:"戦争で最も苦しむのは何も決めていない普通の人々じゃ。それを忘れてはならない。",
+          quiz:[{q:"東京大空襲が起きたのはいつ？",opts:["ア）1944年6月", "イ）1945年3月10日", "ウ）1945年8月6日", "エ）1944年11月"],ans:1,exp:"1945年（昭和20年）3月10日深夜から未明にかけて、アメリカ軍のB-29爆撃機約300機が東京を焼夷弾で爆撃しました。"},{q:"東京大空襲で使われた主な爆弾の種類は？",opts:["ア）原子爆弾", "イ）焼夷弾（火炎弾）", "ウ）通常爆弾", "エ）化学兵器"],ans:1,exp:"東京大空襲では木造家屋を燃やすために焼夷弾（ナパーム焼夷弾）が大量に使用されました。"},{q:"東京大空襲の被害として正しいのは？",opts:["ア）死者約1000人", "イ）死者約10万人・罹災者100万人以上", "ウ）軍の施設のみが被害を受けた", "エ）死者約50万人"],ans:1,exp:"東京大空襲では約10万人が亡くなり、約100万人以上が家を失いました。"}]
+        },
+{
+          id:6,title:"GHQの占領改革って「日本のOS入れ替え」？",subtitle:"——憲法から財閥解体まで、社会の仕組みが変わった。",keyword:"GHQ占領改革",
+          scene:"📍 1945〜52年・東京　GHQ司令部",
+          char1:{icon:"🇺🇸",name:"マッカーサー司令官",line:"日本を民主主義国家に作り直す。憲法を変え財閥を解体し軍を廃止する。"},
+          char2:{icon:"🧒",name:"現代の子",line:"戦争で負けたら社会のシステムを丸ごと入れ替えられる。OSの強制アップデートじゃん！"},
+          eraLabel:"GHQ占領改革",eraIcon:"🇺🇸",
+          eraPoints:["1945〜52年、アメリカ主導の占領政策", "日本国憲法の制定（1947年）・民主化", "財閥解体（三菱・三井・住友など）", "農地改革（農民に土地を）", "教育改革・選挙法改正（女性参政権）"],
+          nowLabel:"現代の「外部からの改革」",nowIcon:"🔄",
+          nowPoints:["IMF・世界銀行が融資条件に「制度改革」を求める", "企業買収後に買収側が経営を全面刷新する", "「外圧で変わる」日本の構造は今も続く", "敗戦後の改革が現代日本の基礎を作った", "改革の「強制」と「内発」のどちらが長続きするか"],
+          modernReaction:"負けた国のOSを入れ替えるって極端だけど、現代の「外圧改革」や企業買収後の刷新と同じ構造だ！",
+          eraReply:"外から押し付けられた改革も定着すれば本物になる。問題はその後どう使うかじゃ。",
+          quiz:[{q:"GHQの占領改革で行われたことに含まれないのは？",opts:["ア）日本国憲法の制定", "イ）財閥解体", "ウ）農地改革", "エ）参勤交代制度の復活"],ans:3,exp:"GHQの改革では憲法制定・財閥解体・農地改革・女性参政権などが実施されましたが、参勤交代は江戸時代の制度であり関係ありません。"},{q:"財閥解体の目的は？",opts:["ア）日本経済を弱体化させるため", "イ）経済の民主化・独占の解体と競争促進", "ウ）アメリカ企業を日本に参入させるため", "エ）税収を増やすため"],ans:1,exp:"財閥解体は三菱・三井・住友などの大財閥が経済を独占し戦争を支えた構造を解体し、経済の民主化と自由競争を促すことが目的でした。"},{q:"GHQの占領改革で女性が初めて得た権利は？",opts:["ア）教育を受ける権利", "イ）参政権（選挙権・被選挙権）", "ウ）財産を持つ権利", "エ）職業選択の自由"],ans:1,exp:"1945年の選挙法改正で女性参政権が認められ、1946年の総選挙で39名の女性議員が誕生しました。"}]
+        },
+{
+          id:7,title:"朝鮮戦争って「日本の経済復興のきっかけ」？",subtitle:"——隣の戦争が日本を救った皮肉。",keyword:"朝鮮戦争",
+          scene:"📍 1950年・朝鮮半島で戦争が始まる",
+          char1:{icon:"🏭",name:"日本の工場主",line:"朝鮮戦争の軍需品の注文が殺到している！工場をフル回転させろ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"隣の国の戦争で自分たちが潤う。「戦争の特需」って複雑な感情だよね…"},
+          eraLabel:"朝鮮戦争と日本",eraIcon:"🏭",
+          eraPoints:["1950〜53年、朝鮮半島で韓国（米国）vs北朝鮮（中国）", "アメリカ軍の補給基地として日本に大量の軍需発注", "「朝鮮特需」で日本経済が劇的に回復", "1951年・サンフランシスコ講和条約で占領終結", "自衛隊の前身「警察予備隊」が設立される"],
+          nowLabel:"現代の「地政学的メリット」",nowIcon:"🌏",
+          nowPoints:["「隣の紛争で利益を得る」構造は今も存在", "防衛産業・軍需産業の経済的恩恵", "難民支援・復興支援業界の拡大", "地政学的リスクが経済を動かす", "「平和の恩恵」を数値化する難しさ"],
+          modernReaction:"朝鮮戦争で日本が経済復興するって複雑だ。地政学的な位置が経済を左右するのは今も変わらないね。",
+          eraReply:"歴史は皮肉に満ちている。誰かの不幸が誰かの好機になる。それを喜ぶべきか悲しむべきかは難しい問いじゃ。",
+          quiz:[{q:"朝鮮戦争が日本経済に与えた影響は？",opts:["ア）日本経済をさらに悪化させた", "イ）軍需品の大量注文（朝鮮特需）で日本経済が急回復した", "ウ）影響はほとんどなかった", "エ）日本も戦争に参加して被害を受けた"],ans:1,exp:"朝鮮戦争でアメリカ軍から武器・弾薬・車両などの大量注文（朝鮮特需）が日本に入り、壊滅的だった日本経済が急速に回復しました。"},{q:"朝鮮戦争がきっかけで日本に設立された軍事組織は？",opts:["ア）日本陸軍", "イ）警察予備隊（後の自衛隊）", "ウ）国家憲兵隊", "エ）海上保安庁"],ans:1,exp:"1950年、在日米軍が朝鮮半島に移動したため日本の防衛空白を埋めるために「警察予備隊」が創設されました。これが後の自衛隊の前身です。"},{q:"日本が正式に独立を回復した条約は？",opts:["ア）ポーツマス条約", "イ）サンフランシスコ講和条約（1951年）", "ウ）日米安全保障条約", "エ）日中平和友好条約"],ans:1,exp:"1951年のサンフランシスコ講和条約により、日本はGHQの占領から解放され独立を回復しました。"}]
+        },
+{
+          id:8,title:"55年体制って「万年与党」の仕組み？",subtitle:"——自民党が38年間政権を握り続けた理由。",keyword:"55年体制",
+          scene:"📍 1955年〜・国会　永続する一党支配",
+          char1:{icon:"🏛️",name:"自民党議員",line:"保守合同で強固な与党を作った。社会党が批判しても我々が勝ち続ける。"},
+          char2:{icon:"🧒",name:"現代の子",line:"38年間政権交代がない。それって競争のない独占市場と同じだ！"},
+          eraLabel:"55年体制",eraIcon:"🏛️",
+          eraPoints:["1955年、自由党と日本民主党が合併→自由民主党（自民党）結成", "同年、左右社会党が統一→社会党", "自民vs社会の「1と2分の1政党制」が固定", "38年間（1955〜93年）自民党が政権を独占", "農村票・業界団体・官僚との三角形が支持基盤"],
+          nowLabel:"現代の「独占と競争」",nowIcon:"📊",
+          nowPoints:["競争相手がいない独占市場は革新が起きにくい", "「万年与党」は腐敗・癒着が起きやすい", "1993年の政権交代でようやく競争が生まれた", "「健全な競争」が民主主義を維持する", "企業の独占と同じく、政治の独占も問題を生む"],
+          modernReaction:"38年間政権交代がないって独占企業みたいだ。競争がないと腐敗するのは政治も企業も同じ構造だ。",
+          eraReply:"競争がなければ組織は腐る。それは政治も企業も同じじゃ。批判と競争が組織を強くする。",
+          quiz:[{q:"「55年体制」の名前の由来は？",opts:["ア）1955年に自民党と社会党が合体したから", "イ）1955年に自民党と社会党がそれぞれ成立して二大政党的な体制が始まったから", "ウ）日本の政治が55年で完成したから", "エ）1955年に憲法が改正されたから"],ans:1,exp:"1955年に保守が自由民主党に合流し、革新が左右社会党に統一したことで「自民vs社会」の体制が始まりました。"},{q:"55年体制が崩壊したきっかけは？",opts:["ア）自民党が解散した", "イ）1993年の選挙で自民党が過半数を失い政権交代が起きた", "ウ）社会党が政権を取った", "エ）連立政権が禁止された"],ans:1,exp:"1993年の衆議院選挙で自民党が過半数を割り込み、非自民の細川連立内閣が誕生して38年間の自民党単独政権が終わりました。"},{q:"55年体制を支えた自民党の支持基盤として正しくないのは？",opts:["ア）農村票（農業票）", "イ）業界団体（建設・医師会など）", "ウ）官僚との協力関係", "エ）労働組合（連合など）"],ans:3,exp:"労働組合は主に社会党・民主党の支持基盤でした。自民党の主な支持基盤は農村票・業界団体・官僚との協力関係でした。"}]
+        },
+{
+          id:9,title:"オイルショックって「石油依存」の危うさ？",subtitle:"——エネルギー問題は今も続く日本の課題。",keyword:"オイルショック",
+          scene:"📍 1973年・スーパーのトイレットペーパー売り場",
+          char1:{icon:"😱",name:"主婦",line:"石油が上がるって、トイレットペーパーや洗剤も消えるわ！買いだめしなきゃ！"},
+          char2:{icon:"🧒",name:"現代の子",line:"デマが広がってパニック買いが起きる。コロナのマスク不足と全く同じ現象だ！"},
+          eraLabel:"オイルショック",eraIcon:"😱",
+          eraPoints:["1973年、第四次中東戦争を契機に産油国が石油の輸出を制限", "日本は石油の99%以上を輸入に依存→経済が大打撃", "物価が1年で30%上昇（狂乱物価）", "トイレットペーパー・洗剤の買い占めパニック", "省エネルギー・産業構造の転換のきっかけに"],
+          nowLabel:"現代のエネルギー問題",nowIcon:"⚡",
+          nowPoints:["日本は今も化石燃料の多くを輸入に依存", "再生可能エネルギーへの転換が急務", "ウクライナ戦争でエネルギー安全保障が再注目", "「エネルギー自立」が国家安全保障の核心", "パニック買いはSNSで瞬時に拡散する時代に"],
+          modernReaction:"石油を止められただけで経済がパニックになる。エネルギー問題って今も全然解決してない。むしろ深刻になってる！",
+          eraReply:"資源のない国が生き残るには知恵と技術で補うしかない。それが日本の宿命じゃ。",
+          quiz:[{q:"第一次オイルショックが起きたきっかけは？",opts:["ア）アメリカの石油生産量の激減", "イ）第四次中東戦争で産油国が石油の輸出を制限した", "ウ）日本が石油の輸入を禁止した", "エ）台風で石油施設が破壊された"],ans:1,exp:"1973年10月の第四次中東戦争（ヨム・キプール戦争）を機に、アラブの産油国がイスラエルを支援する国への石油輸出を制限・禁止しました。"},{q:"オイルショックで日本の物価はどうなった？",opts:["ア）ほとんど変わらなかった", "イ）1年で約30%上昇（狂乱物価）", "ウ）物価が下がった", "エ）10%程度の緩やかな上昇"],ans:1,exp:"第一次オイルショック後の1973〜74年、日本の消費者物価は約30%も上昇し「狂乱物価」と呼ばれました。"},{q:"オイルショックが日本にもたらした長期的な変化は？",opts:["ア）石油の輸入をやめた", "イ）省エネ技術の開発・産業構造の転換（重化学工業から知識産業へ）", "ウ）石炭に完全に切り替えた", "エ）経済成長をあきらめた"],ans:1,exp:"オイルショックは日本の省エネ技術の開発を促し、重化学工業中心から知識・サービス産業への転換のきっかけになりました。"}]
+        },
+{
+          id:10,title:"平成って「失われた30年」の始まり？",subtitle:"——バブル崩壊から続く長期停滞の構造。",keyword:"平成不況",
+          scene:"📍 1990年代・銀行の不良債権処理",
+          char1:{icon:"📉",name:"銀行員",line:"バブルの時に貸したお金が返ってこない……不良債権が山積みじゃ。"},
+          char2:{icon:"🧒",name:"現代の子",line:"バブルではしゃいで後で苦しむ。クレジットカードの使いすぎと同じ構造だ！"},
+          eraLabel:"平成不況（失われた30年）",eraIcon:"📉",
+          eraPoints:["1991年バブル崩壊→株・地価が暴落", "金融機関の不良債権問題で貸し渋り", "1997年・山一証券破綻などの金融危機", "就職氷河期世代の非正規化・格差の固定", "デフレ→物価が上がらない→賃金も上がらない"],
+          nowLabel:"現代の「経済の長期停滞」",nowIcon:"📊",
+          nowPoints:["「失われた30年」の間に日本のGDPランクが低下", "中国・韓国・台湾に追い越される産業分野", "2020年代にようやく賃上げの動き", "「なぜ日本だけ成長しないか」は現代最大の経済問題", "少子化・高齢化・デジタル化への遅れが重なった"],
+          modernReaction:"バブルが崩壊してから30年も停滞するのか。今の就職氷河期世代が今も苦しんでるのはその影響なんだ。",
+          eraReply:"バブルとは夢を借金で買うこと。必ず返済の時が来る。その教訓を活かせたかどうかはあなたたちが判断せよ。",
+          quiz:[{q:"平成不況（バブル崩壊）が始まった年は？",opts:["ア）1985年", "イ）1991年頃", "ウ）1997年", "エ）2000年"],ans:1,exp:"1991年頃から株価・地価が暴落し始め、バブル経済が崩壊しました。"},{q:"「就職氷河期」とは何か？",opts:["ア）冬が寒かった時代", "イ）バブル崩壊後の1990年代〜2000年代初頭の極端な採用抑制期", "ウ）若者が就職を嫌がった時代", "エ）海外就職が増えた時代"],ans:1,exp:"就職氷河期はバブル崩壊後の企業が採用を大幅に絞り込んだ1990年代〜2000年代初頭を指します。"},{q:"「デフレ」とはどのような経済現象か？",opts:["ア）物価が上がり続ける", "イ）物価が下がり続け、経済が縮小する悪循環", "ウ）失業率が上がる", "エ）輸出が増える"],ans:1,exp:"デフレは物価が下がり続ける現象。物価が下がると企業の利益が減り賃金も下がり、さらに消費が減って物価が下がるという悪循環（デフレスパイラル）に陥ります。"}]
+        }
+]
+  }
+];
+// ============================================================
+
+</script>
+<script>
+// STATE
+let currentEraId = 'edo';
+let currentEra = ERAS.find(e => e.id === 'edo');
+let currentEpIdx = 0;
+let readMap = JSON.parse(localStorage.getItem('readMap2') || '{}');
+let quizMap = JSON.parse(localStorage.getItem('quizMap2') || '{}');
+let currentQuiz = [];
+let currentQuizIdx = 0;
+let quizScore = 0;
+let lastQuizEraId = '';
+let lastQuizEpIdx = 0;
+</script>
+<script>
+// ============================================================
+// ERA THEME APPLY
+// ============================================================
+function applyEraTheme(era) {
+  const r = document.documentElement.style;
+  r.setProperty('--cur-accent', `var(--era-${era.id}-accent)`);
+  r.setProperty('--cur-bg', `var(--era-${era.id}-bg)`);
+  document.getElementById('home-icon').textContent = era.icon;
+}
+
+// ============================================================
+// INIT HOME
+// ============================================================
+function initEraGrid() {
+  const grid = document.getElementById('era-grid');
+  grid.innerHTML = ERAS.map(era => {
+    const readCount = (readMap[era.id] || []).length;
+    const total = era.episodes.length;
+    return `<div class="era-card ${era.cls}${era.id===currentEraId?' selected':''}" onclick="selectEra('${era.id}')">
+      <div class="era-badge">${era.badge}</div>
+      <span class="era-icon">${era.icon}</span>
+      <div class="era-period">${era.period}</div>
+      <div class="era-name">${era.name}</div>
+      <div class="era-sub">${era.sub}</div>
+      ${readCount>0?`<div class="era-progress">📖 ${readCount}/${total}話</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function selectEra(id) {
+  currentEraId = id;
+  currentEra = ERAS.find(e => e.id === id);
+  applyEraTheme(currentEra);
+  document.querySelectorAll('.era-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.era-card.${id}`)?.classList.add('selected');
+  document.getElementById('start-btn').textContent = `「${currentEra.name}」で学ぶ ▶`;
+}
+
+function goToHub() {
+  renderHub();
+  showScreen('hub');
+}
+
+// ============================================================
+// HUB
+// ============================================================
+function renderHub() {
+  const era = currentEra;
+  document.getElementById('hub-badge').textContent = era.badge;
+  document.getElementById('hub-badge').style.background = `var(--era-${era.id}-accent)`;
+  document.getElementById('hub-header-title').textContent = era.name;
+  document.getElementById('hub-icon').textContent = era.icon;
+  document.getElementById('hub-title').innerHTML = `<span>${era.icon}</span> ${era.name}<span style="color:var(--yellow)">を学ぶ</span>`;
+  document.getElementById('hub-sub').textContent = `${era.period} ／ ${era.sub}`;
+
+  const eraRead = readMap[era.id] || [];
+  const eraQuiz = quizMap[era.id] || {};
+  const dots = document.getElementById('hub-dots');
+  dots.innerHTML = era.episodes.map((ep, i) => {
+    const read = eraRead.includes(i);
+    const quiz = eraQuiz[i] !== undefined;
+    const cls = quiz ? 'quiz-done' : read ? 'read' : '';
+    return `<div class="hub-dot ${cls}" onclick="readEp(${i})" title="${ep.keyword}">${i+1}</div>`;
+  }).join('');
+
+  document.getElementById('hub-prog-label').textContent =
+    `📖 ${eraRead.length}/${era.episodes.length}話読了`;
+}
+
+// ============================================================
+// EPISODE LIST
+// ============================================================
+function showEpList() {
+  const era = currentEra;
+  const badge = document.getElementById('list-badge');
+  badge.textContent = era.badge;
+  badge.style.background = `var(--era-${era.id}-accent)`;
+  badge.style.color = 'white';
+
+  const eraRead = readMap[era.id] || [];
+  const eraQuiz = quizMap[era.id] || {};
+  const body = document.getElementById('ep-list-body');
+  body.innerHTML = era.episodes.map((ep, i) => {
+    const read = eraRead.includes(i);
+    const score = eraQuiz[i];
+    const badge = score !== undefined ? '✅' : read ? '📖' : '';
+    return `<div class="ep-card ${read?'read':''}" onclick="readEp(${i})">
+      <div class="ep-num">EP.${String(ep.id).padStart(2,'0')}</div>
+      <div class="ep-info">
+        <div class="ep-card-title">${ep.title}</div>
+        <div class="ep-card-sub">${ep.subtitle}${score!==undefined?' ／ クイズ '+score+'/3点':''}</div>
+      </div>
+      <div class="ep-badge">${badge}</div>
+    </div>`;
+  }).join('');
+  showScreen('list');
+}
+
+// ============================================================
+// READER
+// ============================================================
+function readEp(idx) {
+  currentEpIdx = idx;
+  const ep = currentEra.episodes[idx];
+  document.getElementById('reader-title').textContent = `${currentEra.icon} 第${ep.id}話 ${ep.keyword}`;
+  document.getElementById('quiz-btn').style.display = '';
+  document.getElementById('manga-content').innerHTML = buildMangaHtml(ep, currentEra);
+
+  if (!readMap[currentEraId]) readMap[currentEraId] = [];
+  if (!readMap[currentEraId].includes(idx)) {
+    readMap[currentEraId].push(idx);
+    localStorage.setItem('readMap2', JSON.stringify(readMap));
+  }
+  showScreen('reader');
+  document.getElementById('screen-reader').scrollTop = 0;
+}
+
+// ============================================================
+// MANGA HTML BUILDER — NEW DESIGN
+// ============================================================
+function buildMangaHtml(ep, era) {
+  const eraPoints = (ep.eraPoints||[]).map(p=>`<div class="m-split-item">${p}</div>`).join('');
+  const nowPoints = (ep.nowPoints||[]).map(p=>`<div class="m-split-item">${p}</div>`).join('');
+  const char1 = ep.char1 || {icon:'👘', name:'当時の人', line:'……'};
+  const char2 = ep.char2 || {icon:'🧒', name:'現代の子', line:'……'};
+  const c1line = (char1.line||'').replace(/\n/g,'<br>');
+  const c2line = (char2.line||'').replace(/\n/g,'<br>');
+  const reaction = (ep.modernReaction||'').replace(/\n/g,'<br>');
+  const reply = (ep.eraReply||'').replace(/\n/g,'<br>');
+  const insight = (ep.insight||ep.quiz.map(q=>`<strong>${q.opts[q.ans]}</strong>が重要。${q.exp}`).join('<br>'));
+
+  return `<div class="manga-wrap">
+  <div class="m-cover">
+    <div class="m-cover-series">${era.name} Manga Series</div>
+    <div class="m-cover-ep">${era.icon} 第${ep.id}話</div>
+    <div class="m-cover-title">${ep.title.replace('？','<span class="hl">？</span>')}</div>
+    <div class="m-cover-sub">${ep.subtitle}</div>
+  </div>
+
+  <div class="m-page">
+    <div class="m-panel"><div class="m-panel-inner">
+      <div class="m-narr">${era.name}の「${ep.keyword}」——どんな出来事・制度だったのか？</div>
+      <div class="m-narr accent right">現代の言葉に置き換えて読んでみよう。</div>
+    </div></div>
+
+    <div class="m-panel">
+      <div class="m-scene">${ep.scene||'📍 '+era.name+'・'+ep.keyword+'の現場'}</div>
+      <div class="m-panel-inner" style="padding-top:32px">
+        <div class="m-bubble-wrap">
+          <div class="m-char-col"><div class="m-char-icon a">${char1.icon}</div><div class="m-char-name">${char1.name}</div></div>
+          <div class="m-bubble">${c1line}</div>
+        </div>
+        <div class="m-bubble-wrap right">
+          <div class="m-char-col"><div class="m-char-icon b">${char2.icon}</div><div class="m-char-name">${char2.name}</div></div>
+          <div class="m-bubble">${c2line}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="m-page">
+    <div class="m-panel"><div class="m-panel-inner">
+      <div class="m-narr">現代に置き換えると……？</div>
+      <div class="m-sfx-wrap"><span class="m-sfx">ひらめき！</span></div>
+    </div></div>
+
+    <div class="m-split">
+      <div class="m-split-half edo-side">
+        <div class="m-split-badge edo">${ep.eraIcon||era.icon} ${ep.eraLabel||era.name+'の'+ep.keyword}</div>
+        <span class="m-split-emoji">📜</span>
+        <div class="m-split-list">${eraPoints}</div>
+      </div>
+      <div class="m-split-half now-side">
+        <div class="m-split-badge now">${ep.nowIcon||'📱'} ${ep.nowLabel||'現代で考えると'}</div>
+        <span class="m-split-emoji">💡</span>
+        <div class="m-split-list">${nowPoints}</div>
+      </div>
+    </div>
+
+    <div class="m-panel"><div class="m-panel-inner">
+      <div class="m-bubble-wrap">
+        <div class="m-char-col"><div class="m-char-icon b">🧒</div><div class="m-char-name">現代の子</div></div>
+        <div class="m-bubble">${reaction}</div>
+      </div>
+      <div class="m-bubble-wrap right">
+        <div class="m-char-col"><div class="m-char-icon a">${char1.icon}</div><div class="m-char-name">${char1.name}</div></div>
+        <div class="m-bubble">${reply}</div>
+      </div>
+    </div></div>
+
+    <div class="m-insight">
+      <div class="m-insight-label">この話のポイント</div>
+      <div class="m-insight-text">${insight}</div>
+    </div>
+  </div>
+
+  <div class="m-footer">
+    <div class="m-footer-next">クイズで「${ep.keyword}」を確認しよう！</div>
+    <div class="m-footer-num">${era.name} EP.${ep.id} / 了</div>
+  </div>
+</div>`;
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function startQuizForCurrentEp() { startQuiz(currentEraId, currentEpIdx); }
+function startRandomQuiz() { startQuiz(currentEraId, Math.floor(Math.random()*currentEra.episodes.length)); }
+
+function startQuiz(eraId, epIdx) {
+  lastQuizEraId = eraId;
+  lastQuizEpIdx = epIdx;
+  const era = ERAS.find(e=>e.id===eraId);
+  const ep = era.episodes[epIdx];
+  currentQuiz = [...ep.quiz];
+  currentQuizIdx = 0;
+  quizScore = 0;
+  ['quiz-question','quiz-options','quiz-feedback','quiz-next-btn','quiz-prog-bar','quiz-ep-label']
+    .forEach(id => { document.getElementById(id).style.display=''; });
+  document.getElementById('quiz-result').className = 'quiz-result';
+  document.getElementById('quiz-ep-label').textContent = `${era.icon} ${era.name}「${ep.keyword}」`;
+  renderQuestion();
+  showScreen('quiz');
+}
+
+function renderQuestion() {
+  const q = currentQuiz[currentQuizIdx];
+  document.getElementById('quiz-prog-bar').innerHTML =
+    currentQuiz.map((_,i)=>`<div class="quiz-pd ${i<currentQuizIdx?'done':i===currentQuizIdx?'current':''}"></div>`).join('');
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-options').innerHTML =
+    q.opts.map((o,i)=>`<button class="quiz-option" onclick="answer(${i})">${o}</button>`).join('');
+  document.getElementById('quiz-feedback').className = 'quiz-feedback';
+  document.getElementById('quiz-next-btn').className = 'quiz-next-btn';
+}
+
+function answer(chosen) {
+  const q = currentQuiz[currentQuizIdx];
+  document.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);
+  const fb = document.getElementById('quiz-feedback');
+  if (chosen===q.ans) {
+    document.querySelectorAll('.quiz-option')[chosen].classList.add('correct');
+    fb.className='quiz-feedback correct-fb show';
+    fb.innerHTML=`⭕ 正解！<br>${q.exp}`;
+    quizScore++;
+  } else {
+    document.querySelectorAll('.quiz-option')[chosen].classList.add('wrong');
+    document.querySelectorAll('.quiz-option')[q.ans].classList.add('correct');
+    fb.className='quiz-feedback wrong-fb show';
+    fb.innerHTML=`❌ 不正解。正解は「${q.opts[q.ans]}」<br>${q.exp}`;
+  }
+  document.getElementById('quiz-next-btn').className='quiz-next-btn show';
+}
+
+function nextQuestion() {
+  currentQuizIdx++;
+  if(currentQuizIdx>=currentQuiz.length) showResult();
+  else renderQuestion();
+}
+
+function showResult() {
+  ['quiz-question','quiz-options','quiz-feedback','quiz-next-btn','quiz-prog-bar','quiz-ep-label']
+    .forEach(id=>{ document.getElementById(id).style.display='none'; });
+  const era = ERAS.find(e=>e.id===lastQuizEraId);
+  const ep = era.episodes[lastQuizEpIdx];
+  if(!quizMap[lastQuizEraId]) quizMap[lastQuizEraId]={};
+  quizMap[lastQuizEraId][lastQuizEpIdx]=quizScore;
+  localStorage.setItem('quizMap2',JSON.stringify(quizMap));
+  const stamps=['😢','😅','😊','🎉'];
+  const labels=['もう一度読んでみよう！','もう少し！','よくできました！','満点！完璧！'];
+  const si=quizScore===3?3:quizScore>=2?2:quizScore===1?1:0;
+  document.getElementById('result-stamp').textContent=stamps[si];
+  document.getElementById('result-score').textContent=`${quizScore}/3`;
+  document.getElementById('result-label').textContent=labels[si];
+  document.getElementById('result-sub').textContent=`${era.name}「${ep.keyword}」のクイズ結果`;
+  document.getElementById('quiz-result').className='quiz-result show';
+}
+
+function retryQuiz() { startQuiz(lastQuizEraId,lastQuizEpIdx); }
+
+// ============================================================
+// SCREEN MANAGEMENT
+// ============================================================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='home') initEraGrid();
+  if(name==='hub') renderHub();
+  
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+selectEra('edo');
+initEraGrid();
+</script>
+</body>
+</html>
